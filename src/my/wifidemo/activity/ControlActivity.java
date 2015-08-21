@@ -206,6 +206,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 		//获得IP地址和端口号
 		
 		ipTextView.setText(ipstr);
+		
+		HeartBeatThread heartBeatThread=new HeartBeatThread("HEART_BEAT");
+		heartBeatThread.start();
 
 	}
 
@@ -377,6 +380,51 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 		}
 	};
+	
+	/**
+	 * 发送心跳包的线程，确认飞机和手机的连接状态
+	 * */
+	class HeartBeatThread extends HandlerThread{
+
+		private DatagramSocket ds=null;
+		private String udpMsg="";
+		private int count=0;
+		public HeartBeatThread(String name) {
+			super(name);
+			// TODO Auto-generated constructor stub
+		}
+		
+		@Override
+		public void run(){
+			try {
+				ds = new DatagramSocket();
+				InetAddress serverAddr = InetAddress.getByName(ipstr);
+				
+				while(true){
+					DatagramPacket dp;
+					udpMsg=count%2==0?"LED_OPEN1":"LED_CLOSE1";
+					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
+							serverAddr, UDP_SERVER_PORT);
+					ds.send(dp);
+					count=(count+1)%2;
+					sleep(750);
+				}
+			} catch (SocketException e) {
+				e.printStackTrace();
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (ds != null) {
+					ds.close();
+				}
+			}
+		}
+
+	}
 
 	/**
 	 * Modification The thread to open camera
@@ -461,7 +509,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 		}
 	}
 
-	/** 关闭摄像头的线程 */
+	/** 
+	 * 关闭摄像头的线程 
+	 * */
 	class CloseCameraThread extends HandlerThread {
 
 		public CloseCameraThread(String name) {
@@ -476,6 +526,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 		}
 
 	}
+	
+	/**
+	 * 接收图像的线程
+	 * */
 
 	class ImageReceiveThread extends HandlerThread {
 
