@@ -209,6 +209,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		HeartBeatThread heartBeatThread=new HeartBeatThread("HEART_BEAT");
 		heartBeatThread.start();
+		//开启心跳线程，确认飞机和遥控端的连接状态
 
 	}
 
@@ -407,7 +408,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 							serverAddr, UDP_SERVER_PORT);
 					ds.send(dp);
 					count=(count+1)%2;
-					sleep(750);
+					sleep(250);
 				}
 			} catch (SocketException e) {
 				e.printStackTrace();
