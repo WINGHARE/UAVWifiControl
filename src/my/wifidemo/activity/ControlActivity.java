@@ -588,8 +588,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 						inputStream.read(buffer,sum,increment);
 						sum+=increment;
 						
-						if(buffer[0]!=(byte)(0xFF) ||
-								buffer[1]!=(byte)(0xD8)){
+						if(buffer[0]!=-1 ||
+								buffer[1]!=-40){
+							
+							Log.i(TAG, "kek");
 							continue;
 						}
 						
