@@ -994,7 +994,10 @@ containing a value of this type.
         public static final int ic_menu_camera_focused=0x7f02005f;
         public static final int ic_menu_camera_pressed=0x7f020060;
         public static final int icon=0x7f020061;
-        public static final int shadow=0x7f020062;
+        public static final int item=0x7f020062;
+        public static final int item_press=0x7f020063;
+        public static final int itemback=0x7f020064;
+        public static final int shadow=0x7f020065;
     }
     public static final class id {
         public static final int ButtonCloseCamera=0x7f050043;

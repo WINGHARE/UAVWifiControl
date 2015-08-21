@@ -239,7 +239,10 @@ int drawable ic_menu_camera 0x7f02005e
 int drawable ic_menu_camera_focused 0x7f02005f
 int drawable ic_menu_camera_pressed 0x7f020060
 int drawable icon 0x7f020061
-int drawable shadow 0x7f020062
+int drawable item 0x7f020062
+int drawable item_press 0x7f020063
+int drawable itemback 0x7f020064
+int drawable shadow 0x7f020065
 int id ButtonCloseCamera 0x7f050043
 int id ButtonLED1Off 0x7f05004b
 int id ButtonLED1On 0x7f05004a

@@ -899,7 +899,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				"CLOSE_CAMERATHREAD");
 		cameraThread.start();
 		try {
-			Thread.sleep(1500);
+			Thread.sleep(750);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
