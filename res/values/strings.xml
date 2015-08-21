@@ -2,7 +2,7 @@
 <resources>
 
     <string name="hello">Hello World, WifiActivity!</string>
-    <string name="app_name">WiFiControlDemo</string>
+    <string name="app_name">UAVWiFiControlDemo</string>
     <string name="btnLED1On">打开LED1</string>
     <string name="btnLED1Off">关闭LED1</string>
     <string name="btnLED2On">打开LED2</string>
