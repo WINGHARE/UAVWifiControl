@@ -583,6 +583,16 @@ public class ControlActivity extends Activity implements OnClickListener {
 						int increment = 4;
 						InputStream inputStream = socket.getInputStream();
 						byte[] buffer = new byte[bodyLength];
+						
+						
+						inputStream.read(buffer,sum,increment);
+						sum+=increment;
+						
+						if(buffer[0]!=(byte)(0xFF) ||
+								buffer[1]!=(byte)(0xD8)){
+							continue;
+						}
+						
 						while (sum < bodyLength) {
 							inputStream.read(buffer, sum, increment);
 							sum += increment;
