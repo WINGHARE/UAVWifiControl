@@ -1,0 +1,162 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="my.wifidemo.activity.MainActivity"
+    tools:ignore="MergeRootFrame"
+    android:background="@drawable/bg_main"
+     >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#ff03a9F4"
+            android:paddingTop="40dip"
+            android:paddingBottom="15dip"
+            android:paddingLeft="15dip" >
+
+            <TextView
+                android:id="@+id/Title"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="bottom"
+                android:text="@string/title_activity_main"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@drawable/shadow" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="3.5"
+            
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dip"
+                                android:layout_margin="10dip"
+                
+                android:layout_marginBottom="0dip"
+                
+                android:background="#DDEEEEEE"
+                android:orientation="vertical"
+                android:paddingBottom="20dip"
+                android:paddingLeft="10dip"
+                android:paddingRight="10dip"
+                android:paddingTop="10dip" >
+
+                <TextView
+                    android:id="@+id/textViewChooseMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dip"
+                    android:text="@string/chooseMode"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <EditText
+                    android:id="@+id/editTextPort"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:ems="10" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFFFFFFF"
+                    android:onClick="onAdhocClick"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/textViewModeAdhoc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dip"
+                        android:text="@string/mode_adhoc"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <TextView
+                        android:id="@+id/textViewAdhocDes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dip"
+                        android:maxEms="20" 
+                        android:singleLine="false"
+                        android:ellipsize="end"
+                        android:text="@string/desc_adhoc" />
+
+                    <TextView
+                        android:id="@+id/textViewAdhocContiune"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:padding="10dip"
+                        android:text="@string/mode_contiune"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="#999999" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textViewOR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="10dip"
+                    android:text="或" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFFFFFFF"
+                    android:onClick="onInfraClick"
+                    android:orientation="vertical"
+                    android:paddingTop="10dip" >
+
+                    <TextView
+                        android:id="@+id/textViewInfra"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dip"
+                        android:text="@string/mode_infta"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <TextView
+                        android:id="@+id/TextViewInfraDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dip"
+                        android:maxEms="20" 
+                        android:singleLine="false"
+                        android:ellipsize="end"
+                        android:text="@string/desc_infra" />
+
+                    <TextView
+                        android:id="@+id/textViewInfraContiune"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:padding="10dip"
+                        android:text="@string/mode_contiune"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="#999999" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>
+

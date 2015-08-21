@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <ImageView
+            android:id="@+id/VideoImage"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="#00ffffff"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:id="@+id/imageViewbg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/bg1" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+         >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="#50000000"
+            android:orientation="horizontal" >
+            
+            <Button
+                android:id="@+id/buttonBack"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="5dp"
+                android:background="@drawable/button_back" />
+
+            <Button
+                android:id="@+id/buttonCapturePic"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/button_camera" />
+
+            <TextView
+                android:id="@+id/textViewip"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="没有连接"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" 
+                android:gravity="right">
+
+                
+
+                <Button
+                    android:id="@+id/ButtonOpenCamera"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="#dd00ff00"
+                    android:text="@string/btnOpenCamera"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+                
+                 <Button
+                android:id="@+id/ButtonStartRecevie"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/btnStartReceive"
+                android:visibility="gone" 
+                                android:textSize="12sp"
+                
+                android:background="#dd00FF00"
+                android:textColor="#FFFFFF"/>
+
+            <Button
+                android:id="@+id/ButtonCloseCamera"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/btCloseCamera"
+                android:textSize="12sp"
+                android:visibility="gone" 
+                android:background="#ddFF0000"
+                android:textColor="#FFFFFF"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/textViewAngle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" />
+
+                <TextView
+                    android:id="@+id/textViewPower"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" />
+
+                <TextView
+                    android:id="@+id/textViewDirection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" />
+
+                <com.zerokol.views.JoystickView
+                    android:id="@+id/joystickLeft"
+                    android:layout_width="160dip"
+                    android:layout_height="160dip"
+                    android:layout_gravity="bottom" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:orientation="vertical" >
+
+                <Button
+                    android:id="@+id/ButtonLED3On"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED3On" />
+
+                <Button
+                    android:id="@+id/ButtonLED3Off"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED3Off" />
+
+                <Button
+                    android:id="@+id/ButtonLED1On"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED1On" />
+
+                <Button
+                    android:id="@+id/ButtonLED1Off"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED1Off" />
+
+                <Button
+                    android:id="@+id/ButtonLED2On"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED2On" />
+
+                <Button
+                    android:id="@+id/ButtonLED2Off"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED2Off" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

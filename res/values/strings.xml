@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, WifiActivity!</string>
+    <string name="app_name">WiFiControlDemo</string>
+    <string name="btnLED1On">打开LED1</string>
+    <string name="btnLED1Off">关闭LED1</string>
+    <string name="btnLED2On">打开LED2</string>
+    <string name="btnLED2Off">关闭LED2</string>
+    <string name="btnLED3On">打开继电器</string>
+    <string name="btnLED3Off">关闭继电器</string>
+    <string name="btnLED4On">开LED4</string>
+    <string name="btnLED4Off">关LED4</string>
+    <string name="btnBuzzOn">开蜂鸣器</string>
+    <string name="btnBuzzOff">关蜂鸣器</string>
+    <string name="btnRelayOn">开继电器</string>
+    <string name="btnRelayOff">关继电器</string>
+    <string name="btnStartReceive">接收图像</string>
+    <string name="btnConnect">连接无人机</string>
+    <string name="btnOpenCamera">打开摄像头</string>
+    <string name="btCloseCamera">关闭摄像头</string>
+    <string name="btnsetIP">设置IP地址</string>
+    <string name="androidAPSSID">camera</string>
+    <string name="androidAPpwd">1234567890123</string>
+    <string name="chooseMode">请选择端口和工作模式</string>
+    <string name="mode_adhoc">Ad-Hoc模式</string>
+    <string name="mode_infta">Infra模式</string>
+    <string name="desc_infra">客户端将连接由无人机端共享的wifi信号\n在使用该模式之前需打开手机无线热点\n</string>
+    <string name="desc_adhoc">客户端将打开WIFI热点提供无人机连接</string>
+    <string name="mode_contiune">点击继续</string>
+    
+    <color name="red">#ff0000</color>
+    <color name="green">#00ff00</color>
+
+    <string name="bgtext">android wifi</string>
+    <string name="ipnameaddr">请输入开发板IP地址</string>
+    <string name="title_activity_main">欢迎</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+
+</resources>
