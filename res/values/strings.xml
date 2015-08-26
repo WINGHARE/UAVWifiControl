@@ -27,7 +27,7 @@
     <string name="mode_infta">Infra模式</string>
     <string name="desc_infra">客户端将连接由无人机端共享的wifi信号\n在使用该模式之前需打开手机无线热点\n</string>
     <string name="desc_adhoc">客户端将打开WIFI热点提供无人机连接</string>
-    <string name="mode_contiune">点击继续</string>
+    <string name="mode_contiune">点击继续>></string>
     
     <color name="red">#ff0000</color>
     <color name="green">#00ff00</color>
