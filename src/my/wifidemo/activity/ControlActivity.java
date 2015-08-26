@@ -697,6 +697,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				int bodyLength = msg.arg1;
 				BitmapFactory.Options options = new BitmapFactory.Options();
 				options.inSampleSize = 2;
+				options.inMutable=true;
 				Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0,
 						bodyLength, options);
 				imageViewVideo.setImageBitmap(bitmap);
