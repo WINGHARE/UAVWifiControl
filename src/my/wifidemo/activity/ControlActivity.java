@@ -85,6 +85,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private Button btnCaptureScreen = null;
 	private Button btnBack=null;
 	private ImageView imageViewVideo = null;
+	private ImageView imageViewMaskImageView=null;
 	private TextView ipTextView = null;
 	private TextView angleTextView = null;
 	private TextView powerTextView = null;
@@ -177,6 +178,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		btnCaptureScreen = (Button) findViewById(R.id.buttonCapturePic);
 		btnBack=(Button)findViewById(R.id.buttonBack);
 		imageViewVideo = (ImageView) findViewById(R.id.VideoImage);
+		imageViewMaskImageView=(ImageView)findViewById(R.id.imageViewbg);
 		ipTextView = (TextView) findViewById(R.id.textViewip);
 		angleTextView = (TextView) findViewById(R.id.textViewAngle);
 		powerTextView = (TextView) findViewById(R.id.textViewPower);
