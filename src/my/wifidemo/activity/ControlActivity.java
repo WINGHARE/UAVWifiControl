@@ -731,6 +731,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 				Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0,
 						bodyLength, options);
 				
+				
+				DetectFaceAsyncTask detectFaceAsyncTask=new DetectFaceAsyncTask();
+				detectFaceAsyncTask.setBitmap(bitmap);
+				detectFaceAsyncTask.execute();
+				
 				imageViewVideo.setImageBitmap(bitmap);
 				
 				// 将从线程中获取的数据展示在UI的imageview当中。
