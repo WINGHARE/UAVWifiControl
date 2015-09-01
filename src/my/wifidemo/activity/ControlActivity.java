@@ -31,6 +31,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.Bitmap.Config;
+import android.media.FaceDetector;
+import android.media.FaceDetector.Face;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -46,6 +56,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.zerokol.views.JoystickView;
@@ -698,8 +709,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 				BitmapFactory.Options options = new BitmapFactory.Options();
 				options.inSampleSize = 2;
 				options.inMutable=true;
+				options.inPreferredConfig=Bitmap.Config.RGB_565;
 				Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0,
 						bodyLength, options);
+				
 				imageViewVideo.setImageBitmap(bitmap);
 				// 将从线程中获取的数据展示在UI的imageview当中。
 			} else if (msg.what == DISPLY_DIALOG) {
@@ -721,30 +734,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 			}
 		}
 	}
-
-	// Modification 08111524 change inputstream type
-	/*
-	 * class MyBufferedInputStream extends BufferedInputStream {
-	 * 
-	 * // int bodyLength; public MyBufferedInputStream(InputStream in, int
-	 * bodyLength) { super(in, bodyLength); }
-	 * 
-	 * public MyBufferedInputStream(InputStream in) { super(in); }
-	 * 
-	 * public byte[] getBuffer() { return buf; }
-	 * 
-	 * public int getLength() { return buf.length; }
-	 * 
-	 * public int getPosition() { return pos; }
-	 * 
-	 * public void setPosition(int value) { this.pos = value; }
-	 * 
-	 * public void pushBackPosition(int offset) { pos -= offset; }
-	 * 
-	 * public void pushForwardPosition(int offset) { pos += offset; }
-	 * 
-	 * }
-	 */
 
 	/**
 	 * 在子线程中将消息发送给UI线程显示Diaglog
@@ -910,6 +899,107 @@ public class ControlActivity extends Activity implements OnClickListener {
 		startActivity(intent);
 		finish();
 	}
+	
+	/**
+	 * 开启异步任务进行人脸识别*/
+	
+	private class DetectFaceAsyncTask extends AsyncTask<String, Integer, Integer>
+    {
+        private Bitmap bitmap;
+        private Bitmap faceBitmap;
+        private static final int N_MAX=2;
+       
+        private DetectFaceAsyncTask(Bitmap bitmap)
+        {
+            this.bitmap = bitmap;
+        }
+
+        @Override
+        protected Integer doInBackground(String... arg0)
+        {
+            return detectFace(this.bitmap);
+        }
+
+        @Override
+        protected void onPostExecute(Integer faceCount)
+        {
+            super.onPostExecute(faceCount);
+
+        /*    progressBar.setVisibility(View.GONE);
+            clickBtnDetectFace.setEnabled(true);*/
+            imageViewVideo.setImageBitmap(this.faceBitmap);
+
+            Toast.makeText(getApplicationContext(), "检测到人脸: " + faceCount, Toast.LENGTH_SHORT)
+                    .show();
+        }
+
+        
+        /**
+         * 步任务处理图像的具体过程
+         * @param bitmap Bitmap将需要被识别的图片加载进异步任务当中
+         *  */
+        
+        private int detectFace(Bitmap bitmap)
+        {
+            Log.i(TAG, "Begin face detect");
+            if (bitmap == null)
+            {
+               //bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.test);
+            	return 0;
+            }
+
+            this.faceBitmap = bitmap.copy(Config.RGB_565, true);
+            int width = this.faceBitmap.getWidth();
+            int height = this.faceBitmap.getHeight();
+            Log.i(TAG, "待检测图像: w = " + width + ", h = " + height);
+           
+            int detectedFaceCount = 0;
+            
+            Log.i(TAG, "Start face detect");
+            FaceDetector.Face[] faces = new FaceDetector.Face[N_MAX];
+            FaceDetector faceDetector = new FaceDetector(width, height, N_MAX);
+            detectedFaceCount = faceDetector.findFaces(this.faceBitmap, faces);
+            Log.i(TAG, "检测到人脸：" + detectedFaceCount);
+            Log.i(TAG, "Stop face detect");
+            
+            drawFaces(faces, detectedFaceCount);
+            
+            Log.i(TAG, "End face detect");
+
+            return detectedFaceCount;
+        }
+        
+        /**
+         * 在检测到的人脸上面绘制方框
+         * */
+
+        private void drawFaces(FaceDetector.Face[] faces, int detectedFaceCount)
+        {
+            for (int i = 0; i < detectedFaceCount; i++)
+            {
+                Face f = faces[i];
+                PointF midPoint = new PointF();
+                float dis = f.eyesDistance();
+                f.getMidPoint(midPoint);
+                int dd = (int) (dis);
+                Point eyeLeft = new Point((int) (midPoint.x - dis / 2), (int) midPoint.y);
+                Point eyeRight = new Point((int) (midPoint.x + dis / 2), (int) midPoint.y);
+                Rect faceRect = new Rect((int) (midPoint.x - dd), (int) (midPoint.y - dd),
+                        (int) (midPoint.x + dd), (int) (midPoint.y + dd));
+                Log.i(TAG, "左眼坐标 x = " + eyeLeft.x + ", y = " + eyeLeft.y);
+
+                Canvas canvas = new Canvas(this.faceBitmap);
+                Paint p = new Paint();
+                p.setAntiAlias(true);
+                p.setStrokeWidth(8);
+                p.setStyle(Paint.Style.STROKE);
+                p.setColor(Color.GREEN);
+                canvas.drawCircle(eyeLeft.x, eyeLeft.y, 20, p);
+                canvas.drawCircle(eyeRight.x, eyeRight.y, 20, p);
+                canvas.drawRect(faceRect, p);
+            }
+        }
+    }
 
 	@SuppressLint("NewApi")
 	@Override
