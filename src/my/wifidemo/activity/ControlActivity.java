@@ -85,7 +85,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private Button btnCaptureScreen = null;
 	private Button btnBack=null;
 	private ImageView imageViewVideo = null;
-	private ImageView imageViewMaskImageView=null;
+	private ImageView imageViewMask=null;
 	private TextView ipTextView = null;
 	private TextView angleTextView = null;
 	private TextView powerTextView = null;
@@ -178,7 +178,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		btnCaptureScreen = (Button) findViewById(R.id.buttonCapturePic);
 		btnBack=(Button)findViewById(R.id.buttonBack);
 		imageViewVideo = (ImageView) findViewById(R.id.VideoImage);
-		imageViewMaskImageView=(ImageView)findViewById(R.id.imageViewbg);
+		imageViewMask=(ImageView)findViewById(R.id.imageViewbg);
 		ipTextView = (TextView) findViewById(R.id.textViewip);
 		angleTextView = (TextView) findViewById(R.id.textViewAngle);
 		powerTextView = (TextView) findViewById(R.id.textViewPower);
@@ -929,8 +929,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 
         /*    progressBar.setVisibility(View.GONE);
             clickBtnDetectFace.setEnabled(true);*/
-            imageViewVideo.setImageBitmap(this.faceBitmap);
-
+            
+            imageViewMask.setImageBitmap(this.faceBitmap);
+            //将方框绘制在MASK层上面
             Toast.makeText(getApplicationContext(), "检测到人脸: " + faceCount, Toast.LENGTH_SHORT)
                     .show();
         }
@@ -990,6 +991,7 @@ public class ControlActivity extends Activity implements OnClickListener {
                         (int) (midPoint.x + dd), (int) (midPoint.y + dd));
                 Log.i(TAG, "左眼坐标 x = " + eyeLeft.x + ", y = " + eyeLeft.y);
 
+                
                 Canvas canvas = new Canvas(this.faceBitmap);
                 Paint p = new Paint();
                 p.setAntiAlias(true);
