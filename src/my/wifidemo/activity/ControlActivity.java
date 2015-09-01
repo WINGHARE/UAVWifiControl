@@ -29,6 +29,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -38,6 +39,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Bitmap.Config;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 import android.os.AsyncTask;
@@ -237,6 +239,13 @@ public class ControlActivity extends Activity implements OnClickListener {
 			break;
 		case R.id.ButtonLED2On:
 			sendUDPCommand("LED_OPEN2");
+			
+			
+			imageViewVideo.setDrawingCacheEnabled(true);
+			Bitmap detectBitmap = Bitmap.createBitmap(imageViewVideo
+					.getDrawingCache());
+            new DetectFaceAsyncTask(detectBitmap).execute();
+
 			break;
 		case R.id.ButtonLED2Off:
 			sendUDPCommand("TCP_EXCEPTION");
@@ -716,6 +725,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 						bodyLength, options);
 				
 				imageViewVideo.setImageBitmap(bitmap);
+				
 				// 将从线程中获取的数据展示在UI的imageview当中。
 			} else if (msg.what == DISPLY_DIALOG) {
 				String messageString = (String) msg.obj;
@@ -909,6 +919,7 @@ public class ControlActivity extends Activity implements OnClickListener {
     {
         private Bitmap bitmap;
         private Bitmap faceBitmap;
+        private Bitmap maskBitmap;
         private static final int N_MAX=2;
        
         private DetectFaceAsyncTask(Bitmap bitmap)
@@ -930,7 +941,7 @@ public class ControlActivity extends Activity implements OnClickListener {
         /*    progressBar.setVisibility(View.GONE);
             clickBtnDetectFace.setEnabled(true);*/
             
-            imageViewMask.setImageBitmap(this.faceBitmap);
+            imageViewMask.setImageBitmap(this.maskBitmap);
             //将方框绘制在MASK层上面
             Toast.makeText(getApplicationContext(), "检测到人脸: " + faceCount, Toast.LENGTH_SHORT)
                     .show();
@@ -980,19 +991,34 @@ public class ControlActivity extends Activity implements OnClickListener {
         {
             for (int i = 0; i < detectedFaceCount; i++)
             {
+            	Resources res=getResources();               
+            	BitmapFactory.Options options = new BitmapFactory.Options();
+            	options.inMutable=true;
+            	maskBitmap=BitmapFactory.decodeResource(res, R.drawable.bg1,options);
+            	
+            	float scalex =(float) (1920.0/faceBitmap.getWidth());
+            	float scaley =(float) (1080.0/faceBitmap.getHeight());
+
                 Face f = faces[i];
                 PointF midPoint = new PointF();
                 float dis = f.eyesDistance();
                 f.getMidPoint(midPoint);
                 int dd = (int) (dis);
-                Point eyeLeft = new Point((int) (midPoint.x - dis / 2), (int) midPoint.y);
-                Point eyeRight = new Point((int) (midPoint.x + dis / 2), (int) midPoint.y);
-                Rect faceRect = new Rect((int) (midPoint.x - dd), (int) (midPoint.y - dd),
-                        (int) (midPoint.x + dd), (int) (midPoint.y + dd));
-                Log.i(TAG, "左眼坐标 x = " + eyeLeft.x + ", y = " + eyeLeft.y);
+                Point eyeLeft = new Point((int) ((midPoint.x - dis / 2)*scalex), (int) (midPoint.y*scaley));
+                Point eyeRight = new Point((int) ((midPoint.x + dis / 2)*scalex), (int) ((midPoint.y)*scaley));
+                Rect faceRect = new Rect((int) ((midPoint.x - dd)*scalex), (int)( (midPoint.y - dd)*scaley),
+                        (int) ((midPoint.x + dd)*scalex), (int) ((midPoint.y + dd)*scaley));
+                Log.i(TAG, scalex+" "+scaley + "左眼坐标 x = " + eyeLeft.x + ", y = " + eyeLeft.y);
 
                 
-                Canvas canvas = new Canvas(this.faceBitmap);
+               
+                /*int leftx=maskBitmap.getWidth()/faceBitmap.getWidth()*eyeLeft.x;
+                int lefty=maskBitmap.getHeight()/faceBitmap.getHeight()*eyeRight.y;
+                int rightx=maskBitmap.getWidth()/faceBitmap.getWidth()*eyeLeft.x;
+                int righty=maskBitmap.getHeight()/faceBitmap.getHeight()*eyeRight.y;*/
+                
+                //在画面遮罩层上绘制方框
+                Canvas canvas = new Canvas(maskBitmap);
                 Paint p = new Paint();
                 p.setAntiAlias(true);
                 p.setStrokeWidth(8);
