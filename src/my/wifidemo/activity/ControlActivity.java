@@ -245,10 +245,12 @@ public class ControlActivity extends Activity implements OnClickListener {
 			imageViewVideo.setDrawingCacheEnabled(true);
 			Bitmap detectBitmap = Bitmap.createBitmap(imageViewVideo
 					.getDrawingCache());
+			imageViewVideo.setDrawingCacheEnabled(false);
 			
 			DetectFaceAsyncTask detectFaceAsyncTask=new DetectFaceAsyncTask();
 			detectFaceAsyncTask.setBitmap(detectBitmap);
 			detectFaceAsyncTask.execute();
+			
            // new DetectFaceAsyncTask(detectBitmap).execute();
 
 			break;
