@@ -40,6 +40,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 import android.os.AsyncTask;
@@ -244,7 +245,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 			imageViewVideo.setDrawingCacheEnabled(true);
 			Bitmap detectBitmap = Bitmap.createBitmap(imageViewVideo
 					.getDrawingCache());
-            new DetectFaceAsyncTask(detectBitmap).execute();
+			
+			DetectFaceAsyncTask detectFaceAsyncTask=new DetectFaceAsyncTask();
+			detectFaceAsyncTask.setBitmap(detectBitmap);
+			detectFaceAsyncTask.execute();
+           // new DetectFaceAsyncTask(detectBitmap).execute();
 
 			break;
 		case R.id.ButtonLED2Off:
@@ -922,6 +927,10 @@ public class ControlActivity extends Activity implements OnClickListener {
         private Bitmap maskBitmap;
         private static final int N_MAX=2;
        
+        
+        private DetectFaceAsyncTask()
+        {
+        }
         private DetectFaceAsyncTask(Bitmap bitmap)
         {
             this.bitmap = bitmap;
@@ -940,11 +949,24 @@ public class ControlActivity extends Activity implements OnClickListener {
 
         /*    progressBar.setVisibility(View.GONE);
             clickBtnDetectFace.setEnabled(true);*/
-            
-            imageViewMask.setImageBitmap(this.maskBitmap);
+            if(faceCount>0){
+            	imageViewMask.setImageBitmap(this.maskBitmap);
+            	
+            }
+            else{
+            	
+            	imageViewMask.setImageResource(R.drawable.bg1);
+
+            }
             //将方框绘制在MASK层上面
             Toast.makeText(getApplicationContext(), "检测到人脸: " + faceCount, Toast.LENGTH_SHORT)
                     .show();
+            
+            
+        }
+        
+        public void setBitmap(Bitmap bmp){
+        	this.bitmap=bmp;
         }
 
         
