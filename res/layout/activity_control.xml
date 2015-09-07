@@ -143,31 +143,35 @@
                     android:id="@+id/ButtonLED3On"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/btnLED3On" />
-
-                <Button
-                    android:id="@+id/ButtonLED3Off"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/btnLED3Off" />
-
-                <Button
-                    android:id="@+id/ButtonLED1On"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/btnLED1On" />
-
-                <Button
-                    android:id="@+id/ButtonLED1Off"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/btnLED1Off" />
+                    android:text="@string/btnLED3On" 
+                    android:visibility="gone"/>
 
                 <Button
                     android:id="@+id/ButtonLED2On"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btnLED2On" />
+
+                <Button
+                    android:id="@+id/ButtonLED3Off"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED3Off"
+                    android:visibility="gone"/>
+
+                <Button
+                    android:id="@+id/ButtonLED1On"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED1On" 
+                    android:visibility="gone"/>
+
+                <Button
+                    android:id="@+id/ButtonLED1Off"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED1Off"
+                    android:visibility="gone" />
 
                 <Button
                     android:id="@+id/ButtonLED2Off"
