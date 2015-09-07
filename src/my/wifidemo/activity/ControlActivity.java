@@ -388,7 +388,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 			// TODO Auto-generated method stub
 			angleTextView.setText(" " + String.valueOf(angle) + "°");
 			powerTextView.setText(" " + String.valueOf(power) + "%");
-			changeCtrlMsgThread.getHandler().sendEmptyMessage(1);
+			//changeCtrlMsgThread.getHandler().sendEmptyMessage(1);
+			synchronized (controlMsg) {
+				controlMsg="1";
+			}
 			switch (direction) {
 			case JoystickView.FRONT:
 				directionTextView.setText("N");
@@ -1024,7 +1027,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				"CLOSE_CAMERATHREAD");
 		cameraThread.start();
 		try {
-			Thread.sleep(750);
+			Thread.sleep(250);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

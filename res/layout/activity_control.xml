@@ -128,8 +128,8 @@
 
                 <com.zerokol.views.JoystickView
                     android:id="@+id/joystickLeft"
-                    android:layout_width="160dip"
-                    android:layout_height="160dip"
+                    android:layout_width="200dip"
+                    android:layout_height="200dip"
                     android:layout_gravity="bottom" />
             </LinearLayout>
 
@@ -151,12 +151,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="高度" />
-
-                <Button
-                    android:id="@+id/ButtonLED2On"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/btnLED2On" />
 
                 <Button
                     android:id="@+id/ButtonLED3Off"
@@ -185,12 +179,18 @@
                     android:layout_height="wrap_content"
                     android:text="@string/btnLED2Off" 
                     android:visibility="gone"/>
+
+                <Button
+                    android:id="@+id/ButtonLED2On"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnLED2On" />
                 
                <my.wifidemo.views.VerticalSeekBar
                    android:id="@+id/SeekBarHeight"
                    android:layout_width="wrap_content"
-                   android:layout_height="160dp"
-                   android:layout_marginRight="10dp" 
+                   android:layout_height="200dp"
+                   android:layout_marginRight="30dp" 
                    android:progressDrawable="@drawable/seekbar_define_style"
                    android:thumb="@drawable/seekbar_thumb"/>
 

@@ -33,7 +33,7 @@ public class JoystickView extends View implements Runnable {
 	//private Paint secondaryCircle;  mod
 	private Paint button;
 	//private Paint horizontalLine;
-	private Paint verticalLine;  
+	//private Paint verticalLine;  
 	private int joystickRadius;
 	private int buttonRadius;
 	private int lastAngle = 0;
@@ -64,10 +64,10 @@ public class JoystickView extends View implements Runnable {
 		secondaryCircle.setStyle(Paint.Style.STROKE);
 		 */
 
-		verticalLine = new Paint();
+		/*verticalLine = new Paint();
 		verticalLine.setStrokeWidth(5);
 		verticalLine.setColor(Color.RED);
-		
+		*/
 		//horizontalLine = new Paint();
 		//horizontalLine.setStrokeWidth(2);
 		//horizontalLine.setColor(Color.BLACK);
@@ -138,8 +138,8 @@ public class JoystickView extends View implements Runnable {
 		canvas.drawCircle((int) centerX, (int) centerY, joystickRadius / 2,
 				secondaryCircle);*/
 		// paint lines
-		canvas.drawLine((float) centerX, (float) centerY, (float) centerX,
-				(float) (centerY - joystickRadius), verticalLine);
+	/*	canvas.drawLine((float) centerX, (float) centerY, (float) centerX,
+				(float) (centerY - joystickRadius), verticalLine);*/
 	/*	canvas.drawLine((float) (centerX - joystickRadius), (float) centerY,
 				(float) (centerX + joystickRadius), (float) centerY,
 				horizontalLine);
