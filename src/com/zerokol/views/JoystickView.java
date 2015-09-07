@@ -32,7 +32,7 @@ public class JoystickView extends View implements Runnable {
 	private Paint mainCircle;
 	//private Paint secondaryCircle;  mod
 	private Paint button;
-	private Paint horizontalLine;
+	//private Paint horizontalLine;
 	private Paint verticalLine;  
 	private int joystickRadius;
 	private int buttonRadius;
@@ -68,9 +68,9 @@ public class JoystickView extends View implements Runnable {
 		verticalLine.setStrokeWidth(5);
 		verticalLine.setColor(Color.RED);
 		
-		horizontalLine = new Paint();
-		horizontalLine.setStrokeWidth(2);
-		horizontalLine.setColor(Color.BLACK);
+		//horizontalLine = new Paint();
+		//horizontalLine.setStrokeWidth(2);
+		//horizontalLine.setColor(Color.BLACK);
 
 		button = new Paint(Paint.ANTI_ALIAS_FLAG);
 		button.setColor(Color.argb(192, 0, 0, 0));
@@ -140,11 +140,11 @@ public class JoystickView extends View implements Runnable {
 		// paint lines
 		canvas.drawLine((float) centerX, (float) centerY, (float) centerX,
 				(float) (centerY - joystickRadius), verticalLine);
-		canvas.drawLine((float) (centerX - joystickRadius), (float) centerY,
+	/*	canvas.drawLine((float) (centerX - joystickRadius), (float) centerY,
 				(float) (centerX + joystickRadius), (float) centerY,
 				horizontalLine);
 		canvas.drawLine((float) centerX, (float) (centerY + joystickRadius),
-				(float) centerX, (float) centerY, horizontalLine);
+				(float) centerX, (float) centerY, horizontalLine);*/
 
 		// painting the move button
 		canvas.drawCircle(xPosition, yPosition, buttonRadius, button);
