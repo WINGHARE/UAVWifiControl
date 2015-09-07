@@ -117,6 +117,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private static int UDP_SERVER_PORT = 10086;
 	
 	private HeartBeatThread heartBeatThread;
+	private ChangeCtrlMsgThread changeCtrlMsgThread;
+	public static String controlMsg="0";
 	
 	/**
 	 * 方便其他页面可以启动该页面
@@ -252,6 +254,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		heartBeatThread=new HeartBeatThread("HEART_BEAT");
 		heartBeatThread.start();
+		
+		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
+		changeCtrlMsgThread.start();
+				
 		//开启心跳线程，确认飞机和遥控端的连接状态
 
 	}
@@ -382,8 +388,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 			// TODO Auto-generated method stub
 			angleTextView.setText(" " + String.valueOf(angle) + "°");
 			powerTextView.setText(" " + String.valueOf(power) + "%");
-			heartBeatThread.geHandler().sendEmptyMessage(1);
-			
+			changeCtrlMsgThread.getHandler().sendEmptyMessage(1);
 			switch (direction) {
 			case JoystickView.FRONT:
 				directionTextView.setText("N");
@@ -449,22 +454,22 @@ public class ControlActivity extends Activity implements OnClickListener {
 		private String udpMsg="";
 		private String ctrString="";
 		private int count=0;
-		public Handler mHandler;
+		//public Handler mHandler;
 		public HeartBeatThread(String name) {
 			super(name);
 			// TODO Auto-generated constructor stub
 		}
 		
-		public Handler geHandler(){
+		/*public Handler geHandler(){
 			return mHandler;
 		}
-		
+		*/
 		@Override
 		public void run(){
 			
-			Looper.prepare();
+		//	Looper.prepare();
 			
-			mHandler=new Handler(){
+	/*		mHandler=new Handler(){
 				
 				@Override
 				public void handleMessage(Message msg) {
@@ -476,7 +481,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				}
 				
 			};
-			
+			*/
 			
 			try {
 				ds = new DatagramSocket();
@@ -485,7 +490,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 				while(true && HeartBeatThreadEnable){
 					
 					DatagramPacket dp;
-					udpMsg=count%2==0?"LED_OPEN1":"LED_CLOSE1";
+				//	udpMsg=count%2==0?"LED_OPEN1":"LED_CLOSE1";
+					udpMsg=controlMsg;
 					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
 							serverAddr, UDP_SERVER_PORT);
 					ds.send(dp);
@@ -493,7 +499,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 					Log.i(TAG,udpMsg);
 					Log.i(TAG,ctrString);
 
-					sleep(250);
+					
+					synchronized (controlMsg) {
+						controlMsg="0";
+					}
+					sleep(125);
 				}
 			} catch (SocketException e) {
 				e.printStackTrace();
@@ -508,12 +518,51 @@ public class ControlActivity extends Activity implements OnClickListener {
 					ds.close();
 				}
 			}
-			Looper.loop();
+		//	Looper.loop();
 			
 		}
 
 	}
 
+	/**
+	 * 修改飞机控制信号的线程
+	 * */
+	class ChangeCtrlMsgThread extends HandlerThread{
+
+		
+		private Handler handler;
+		public Handler getHandler() {
+			return handler;
+		}
+
+		public ChangeCtrlMsgThread(String name) {
+			super(name);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			Looper.prepare();
+			handler = new Handler(){
+
+				@Override
+				public void handleMessage(Message msg) {
+					// TODO Auto-generated method stub
+					super.handleMessage(msg);
+					synchronized (controlMsg) {
+						controlMsg="1";
+					}
+				}
+				
+			};
+			Looper.loop();
+			super.run();
+		}
+		
+		
+		
+	}
 	/**
 	 * Modification The thread to open camera
 	 **/
