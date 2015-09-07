@@ -75,6 +75,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 	public static final String TAG = "RECEIVE_ACTIVITY";
 	private int version;
 	private Boolean cameraOpenFlagBoolean = false;
+	private Boolean imageRecenable=true;
+	private Boolean HeartBeatThreadEnable=true;
 	private JoystickView joystickLeft = null;
 	private Button btnLED1On = null;
 	private Button btnLED1Off = null;
@@ -130,7 +132,30 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 	@Override
 	public void onBackPressed() {
+		
+		synchronized (imageRecenable) {
+			imageRecenable = false;
+		}
+		synchronized (HeartBeatThreadEnable) {
+			HeartBeatThreadEnable=false;
+		}
 		backToPage();
+	}
+	
+	
+
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		
+		synchronized (imageRecenable) {
+			imageRecenable = false;
+		}
+		
+		synchronized (HeartBeatThreadEnable) {
+			HeartBeatThreadEnable=false;
+		}
+		super.onDestroy();
 	}
 
 	/** Called when the activity is first created. */
@@ -430,7 +455,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				ds = new DatagramSocket();
 				InetAddress serverAddr = InetAddress.getByName(ipstr);
 				
-				while(true){
+				while(true && HeartBeatThreadEnable){
 					DatagramPacket dp;
 					udpMsg=count%2==0?"LED_OPEN1":"LED_CLOSE1";
 					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
@@ -590,7 +615,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 					displayDialog("开始传输视频");
 				}
 
-				while (socket.isConnected() && cameraOpenFlagBoolean == true) {
+				while (socket.isConnected() && cameraOpenFlagBoolean 
+						&& imageRecenable) {
 					// Modification deletion 1508111333
 					/*
 					 * inputStream = new MyBufferedInputStream(
