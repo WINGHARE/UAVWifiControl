@@ -116,6 +116,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private static String ipstr = "";
 	private static int UDP_SERVER_PORT = 10086;
 	
+	private HeartBeatThread heartBeatThread;
+	
 	/**
 	 * 方便其他页面可以启动该页面
 	 * @param context Context当前上下文
@@ -248,7 +250,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		ipTextView.setText(ipstr);
 		
-		HeartBeatThread heartBeatThread=new HeartBeatThread("HEART_BEAT");
+		heartBeatThread=new HeartBeatThread("HEART_BEAT");
 		heartBeatThread.start();
 		//开启心跳线程，确认飞机和遥控端的连接状态
 
@@ -380,6 +382,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 			// TODO Auto-generated method stub
 			angleTextView.setText(" " + String.valueOf(angle) + "°");
 			powerTextView.setText(" " + String.valueOf(power) + "%");
+			heartBeatThread.geHandler().sendEmptyMessage(1);
+			
 			switch (direction) {
 			case JoystickView.FRONT:
 				directionTextView.setText("N");
@@ -443,25 +447,52 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 		private DatagramSocket ds=null;
 		private String udpMsg="";
+		private String ctrString="";
 		private int count=0;
+		public Handler mHandler;
 		public HeartBeatThread(String name) {
 			super(name);
 			// TODO Auto-generated constructor stub
 		}
 		
+		public Handler geHandler(){
+			return mHandler;
+		}
+		
 		@Override
 		public void run(){
+			
+			Looper.prepare();
+			
+			mHandler=new Handler(){
+				
+				@Override
+				public void handleMessage(Message msg) {
+					// TODO Auto-generated method stub
+					super.handleMessage(msg);
+					Log.i(TAG, "message caughtg");
+					ctrString="ctr";
+					
+				}
+				
+			};
+			
+			
 			try {
 				ds = new DatagramSocket();
 				InetAddress serverAddr = InetAddress.getByName(ipstr);
 				
 				while(true && HeartBeatThreadEnable){
+					
 					DatagramPacket dp;
 					udpMsg=count%2==0?"LED_OPEN1":"LED_CLOSE1";
 					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
 							serverAddr, UDP_SERVER_PORT);
 					ds.send(dp);
 					count=(count+1)%2;
+					Log.i(TAG,udpMsg);
+					Log.i(TAG,ctrString);
+
 					sleep(250);
 				}
 			} catch (SocketException e) {
@@ -477,6 +508,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 					ds.close();
 				}
 			}
+			Looper.loop();
+			
 		}
 
 	}
@@ -494,7 +527,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 		@Override
 		public void run() {
-
+	
+			
+			
 			Log.i(TAG, "[OpenCameraThread] thread ID: "
 					+ Thread.currentThread().getId());
 
@@ -561,6 +596,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				displayDialog("摄像头指令发送失败");
 				resetButtonStatus();
 			}
+			
 		}
 	}
 
