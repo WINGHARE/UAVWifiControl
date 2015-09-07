@@ -146,6 +146,12 @@
                     android:text="@string/btnLED3On" 
                     android:visibility="gone"/>
 
+                <TextView
+                    android:id="@+id/textViewFlightHeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="高度" />
+
                 <Button
                     android:id="@+id/ButtonLED2On"
                     android:layout_width="wrap_content"
@@ -177,7 +183,16 @@
                     android:id="@+id/ButtonLED2Off"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/btnLED2Off" />
+                    android:text="@string/btnLED2Off" 
+                    android:visibility="gone"/>
+                
+               <my.wifidemo.views.VerticalSeekBar
+                   android:id="@+id/SeekBarHeight"
+                   android:layout_width="wrap_content"
+                   android:layout_height="160dp"
+                   android:layout_marginRight="10dp" 
+                   android:progressDrawable="@drawable/seekbar_define_style"
+                   android:thumb="@drawable/seekbar_thumb"/>
 
             </LinearLayout>
         </LinearLayout>

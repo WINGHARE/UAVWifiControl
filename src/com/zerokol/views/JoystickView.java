@@ -73,7 +73,7 @@ public class JoystickView extends View implements Runnable {
 		horizontalLine.setColor(Color.BLACK);
 
 		button = new Paint(Paint.ANTI_ALIAS_FLAG);
-		button.setColor(Color.argb(128, 100, 100, 100));
+		button.setColor(Color.argb(192, 0, 0, 0));
 		button.setStyle(Paint.Style.FILL);
 	}
 
