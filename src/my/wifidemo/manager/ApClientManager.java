@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import android.R.integer;
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import my.wifidemo.R;
 import my.wifidemo.activity.*;
@@ -35,6 +36,15 @@ public class ApClientManager {
 				.getSystemService(Context.WIFI_SERVICE);
 
 		//initConnectedIPs();
+	}
+	
+	public WifiManager getWifiManager() {
+		return wifiManager;
+	}
+	
+	public WifiInfo getConnectWifiInfo(){
+		WifiInfo wifiInfo=wifiManager.getConnectionInfo();
+		return wifiInfo;
 	}
 
 	public void initConnectedIPs() {
