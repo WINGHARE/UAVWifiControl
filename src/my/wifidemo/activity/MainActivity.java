@@ -1,5 +1,7 @@
 package my.wifidemo.activity;
 
+import java.util.ArrayList;
+
 import my.wifidemo.R;
 import my.wifidemo.manager.ApClientManager;
 import android.app.Activity;
@@ -16,6 +18,7 @@ public class MainActivity extends Activity {
 
 	private ApClientManager apClientManager = null;
 	private String ipString = "";
+	private ArrayList<String> ipStringSet;
 	private final static String adhocIp = "192.168.10.10";
 	private EditText portText=null;
 	private String port="10086";
@@ -26,6 +29,8 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		portText=(EditText)findViewById(R.id.editTextPort);
 		portText.setText(port);
+		
+		ipStringSet=new ArrayList<String>();
 		apClientManager = new ApClientManager(this);
 
 	}

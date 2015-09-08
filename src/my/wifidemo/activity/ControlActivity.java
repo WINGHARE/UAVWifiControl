@@ -732,8 +732,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 						sum+=increment;
 						
 						if(buffer[0]!=-1 ||
-								buffer[1]!=-40){
-							
+								buffer[1]!=-40){						
 							Log.i(TAG, "kek");
 							continue;
 						}
