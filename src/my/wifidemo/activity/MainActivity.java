@@ -5,9 +5,13 @@ import java.util.ArrayList;
 import my.wifidemo.R;
 import my.wifidemo.manager.ApClientManager;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.AlarmClock;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -20,6 +24,7 @@ public class MainActivity extends Activity {
 	private String ipString = "";
 	private ArrayList<String> ipStringSet;
 	private final static String adhocIp = "192.168.10.10";
+	
 	private EditText portText=null;
 	private String port="10086";
 
@@ -49,8 +54,26 @@ public class MainActivity extends Activity {
 		if (apClientManager.isApEnadbled()) {
 			apClientManager.initConnectedIPs();
 			if (!apClientManager.isEmpty()) {
-				ipString = apClientManager.getConnectedIp(0);
-				StartDisplayActivity(ipString,port);
+				//ipString = apClientManager.getConnectedIp(0);
+				ipStringSet=apClientManager.getConnectedIpList();
+				//StartDisplayActivity(ipString,port);
+
+				CharSequence[] cSequence=(CharSequence[])ipStringSet.toArray(
+						new CharSequence[ipStringSet.size()]);
+				//将LIST转化为CHATSEQ对象再选择IP地址
+				AlertDialog.Builder builder=new AlertDialog.Builder(this);
+				builder.setMessage("请选需要连接的设备");
+				builder.setItems(cSequence,new DialogInterface.OnClickListener() {
+					
+					public void onClick(DialogInterface arg0, int pos) {
+						// TODO Auto-generated method stub
+						ipString=ipStringSet.get(pos);
+						StartDisplayActivity(ipString,port);
+
+					}
+				});
+				builder.show();
+				
 				// 若WIFI热点已经打开并且已经成功连接，则启动视频监控界面
 			} else {
 				Toast.makeText(getApplicationContext(), "尚未有设备连接上本机WIFI热点",
