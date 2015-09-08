@@ -147,7 +147,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 	}
 	
 	
-
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
@@ -463,28 +462,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 			// TODO Auto-generated constructor stub
 		}
 		
-		/*public Handler geHandler(){
-			return mHandler;
-		}
-		*/
+
 		@Override
 		public void run(){
 			
-		//	Looper.prepare();
-			
-	/*		mHandler=new Handler(){
-				
-				@Override
-				public void handleMessage(Message msg) {
-					// TODO Auto-generated method stub
-					super.handleMessage(msg);
-					Log.i(TAG, "message caughtg");
-					ctrString="ctr";
-					
-				}
-				
-			};
-			*/
 			
 			try {
 				ds = new DatagramSocket();
@@ -493,7 +474,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 				while(true && HeartBeatThreadEnable){
 					
 					DatagramPacket dp;
-				//	udpMsg=count%2==0?"LED_OPEN1":"LED_CLOSE1";
 					udpMsg=controlMsg;
 					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
 							serverAddr, UDP_SERVER_PORT);
@@ -562,8 +542,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 			Looper.loop();
 			super.run();
 		}
-		
-		
 		
 	}
 	/**
@@ -705,12 +683,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 				while (socket.isConnected() && cameraOpenFlagBoolean 
 						&& imageRecenable) {
-					// Modification deletion 1508111333
-					/*
-					 * inputStream = new MyBufferedInputStream(
-					 * socket.getInputStream());
-					 */
-
+				
 					if (socket.getInputStream().available() < 4) {
 						continue;
 					}
@@ -745,14 +718,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 						inputStream.read(buffer, sum, bodyLength - sum);
 
 						// 从流中读取数据到缓冲区当中
-
-						// 将流保存在本地文件 FileOutputStream
-						/*
-						 * FileOutputStream
-						 * fileOutputStream=openFileOutput("text.jpg",
-						 * MODE_PRIVATE); fileOutputStream.write(buffer);
-						 * fileOutputStream.close();
-						 */
 
 						Message message = new Message();
 						message.what = REFRESH_VIEW;
@@ -1019,7 +984,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 	}
 	
 	/**
+	 * 
 	 * 返回主页
+	 *  
 	 * */
 	private void backToPage(){
 		CloseCameraThread cameraThread = new CloseCameraThread(
@@ -1066,16 +1033,13 @@ public class ControlActivity extends Activity implements OnClickListener {
         protected void onPostExecute(Integer faceCount)
         {
             super.onPostExecute(faceCount);
-
-        /*    progressBar.setVisibility(View.GONE);
-            clickBtnDetectFace.setEnabled(true);*/
             if(faceCount>0){
             	imageViewMask.setImageBitmap(this.maskBitmap);
             	
             }
             else{
             	
-            	imageViewMask.setImageResource(R.drawable.bg1);
+            	imageViewMask.setImageResource(R.drawable.bg_mask);
 
             }
             //将方框绘制在MASK层上面
@@ -1136,7 +1100,7 @@ public class ControlActivity extends Activity implements OnClickListener {
             	Resources res=getResources();               
             	BitmapFactory.Options options = new BitmapFactory.Options();
             	options.inMutable=true;
-            	maskBitmap=BitmapFactory.decodeResource(res, R.drawable.bg1,options);
+            	maskBitmap=BitmapFactory.decodeResource(res, R.drawable.bg_mask,options);
             	
             	float scalex =(float) (1920.0/faceBitmap.getWidth());
             	float scaley =(float) (1080.0/faceBitmap.getHeight());
@@ -1152,13 +1116,6 @@ public class ControlActivity extends Activity implements OnClickListener {
                         (int) ((midPoint.x + dd)*scalex), (int) ((midPoint.y + dd)*scaley));
                 Log.i(TAG, scalex+" "+scaley + "左眼坐标 x = " + eyeLeft.x + ", y = " + eyeLeft.y);
 
-                
-               
-                /*int leftx=maskBitmap.getWidth()/faceBitmap.getWidth()*eyeLeft.x;
-                int lefty=maskBitmap.getHeight()/faceBitmap.getHeight()*eyeRight.y;
-                int rightx=maskBitmap.getWidth()/faceBitmap.getWidth()*eyeLeft.x;
-                int righty=maskBitmap.getHeight()/faceBitmap.getHeight()*eyeRight.y;*/
-                
                 //在画面遮罩层上绘制方框
                 Canvas canvas = new Canvas(maskBitmap);
                 Paint p = new Paint();
