@@ -50,7 +50,11 @@ public class ApClientManager {
 				if (splittedString != null && splittedString.length >= 4) {
 					String ip = splittedString[0];
 					if (ip.trim().matches(REG)) {
-						connectdIPArrayList.add(ip);
+						
+						if(!connectdIPArrayList.contains(ip)){
+							
+							connectdIPArrayList.add(ip);
+						}
 						// 如果正则表达式匹配则加入ip列表
 					}
 				}

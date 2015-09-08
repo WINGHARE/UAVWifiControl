@@ -10,8 +10,10 @@ import android.app.AlertDialog.Builder;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.provider.AlarmClock;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -55,14 +57,15 @@ public class MainActivity extends Activity {
 			apClientManager.initConnectedIPs();
 			if (!apClientManager.isEmpty()) {
 				//ipString = apClientManager.getConnectedIp(0);
-				ipStringSet=apClientManager.getConnectedIpList();
+				
+					ipStringSet=apClientManager.getConnectedIpList();
 				//StartDisplayActivity(ipString,port);
 
 				CharSequence[] cSequence=(CharSequence[])ipStringSet.toArray(
 						new CharSequence[ipStringSet.size()]);
 				//将LIST转化为CHATSEQ对象再选择IP地址
 				AlertDialog.Builder builder=new AlertDialog.Builder(this);
-				builder.setMessage("请选需要连接的设备");
+				builder.setTitle("请选需要连接的设备");
 				builder.setItems(cSequence,new DialogInterface.OnClickListener() {
 					
 					public void onClick(DialogInterface arg0, int pos) {
@@ -73,7 +76,9 @@ public class MainActivity extends Activity {
 					}
 				});
 				builder.show();
-				
+
+				System.out.println(ipStringSet.size());
+				System.out.println(cSequence.length);
 				// 若WIFI热点已经打开并且已经成功连接，则启动视频监控界面
 			} else {
 				Toast.makeText(getApplicationContext(), "尚未有设备连接上本机WIFI热点",
