@@ -1011,7 +1011,7 @@ containing a value of this type.
         public static final int ButtonLED2Off=0x7f05004d;
         public static final int ButtonLED2On=0x7f05004e;
         public static final int ButtonLED3Off=0x7f05004a;
-        public static final int ButtonLED3On=0x7f050048;
+        public static final int ButtonLED3On=0x7f050049;
         public static final int ButtonOpenCamera=0x7f050041;
         public static final int ButtonStartRecevie=0x7f050042;
         public static final int SeekBarHeight=0x7f05004f;
@@ -1085,7 +1085,7 @@ containing a value of this type.
         public static final int textViewAngle=0x7f050044;
         public static final int textViewChooseMode=0x7f050052;
         public static final int textViewDirection=0x7f050046;
-        public static final int textViewFlightHeight=0x7f050049;
+        public static final int textViewFlightHeight=0x7f050048;
         public static final int textViewInfra=0x7f050058;
         public static final int textViewInfraContiune=0x7f05005a;
         public static final int textViewModeAdhoc=0x7f050054;

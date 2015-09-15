@@ -254,7 +254,7 @@ int id ButtonLED1On 0x7f05004b
 int id ButtonLED2Off 0x7f05004d
 int id ButtonLED2On 0x7f05004e
 int id ButtonLED3Off 0x7f05004a
-int id ButtonLED3On 0x7f050048
+int id ButtonLED3On 0x7f050049
 int id ButtonOpenCamera 0x7f050041
 int id ButtonStartRecevie 0x7f050042
 int id SeekBarHeight 0x7f05004f
@@ -328,7 +328,7 @@ int id textViewAdhocDes 0x7f050055
 int id textViewAngle 0x7f050044
 int id textViewChooseMode 0x7f050052
 int id textViewDirection 0x7f050046
-int id textViewFlightHeight 0x7f050049
+int id textViewFlightHeight 0x7f050048
 int id textViewInfra 0x7f050058
 int id textViewInfraContiune 0x7f05005a
 int id textViewModeAdhoc 0x7f050054

@@ -997,6 +997,47 @@ public class ControlActivity extends Activity implements OnClickListener {
 		}.start();
 		;
 	}
+	
+	/**
+	 * 使用UDP向开发板发送信号
+	 * 
+	 * @param data
+	 *            byte[] 需要发送的字节码
+	 * */
+	private void sendUDPCommand(final byte[] data) {
+
+		new Thread() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+			//	String udpMsg = command;
+				DatagramSocket ds = null;
+				try {
+					ds = new DatagramSocket();
+					InetAddress serverAddr = InetAddress.getByName(ipstr);
+					DatagramPacket dp;
+					dp = new DatagramPacket(data, data.length,
+							serverAddr, UDP_SERVER_PORT);
+					ds.send(dp);
+				} catch (SocketException e) {
+					e.printStackTrace();
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (ds != null) {
+						ds.close();
+					}
+				}
+				super.run();
+			}
+
+		}.start();
+		;
+	}
 
 	/**
 	 * 使用UDP向开发板发送TCP错误
