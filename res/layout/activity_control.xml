@@ -145,7 +145,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btnLED3On" 
-                    android:visibility="gone"/>
+                    android:visibility="visible"/>
 
                 <TextView
                     android:id="@+id/textViewFlightHeight"
@@ -158,7 +158,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btnLED3Off"
-                    android:visibility="gone"/>
+                    android:visibility="visible"/>
 
                 <Button
                     android:id="@+id/ButtonLED1On"

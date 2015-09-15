@@ -118,6 +118,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 	
 	private HeartBeatThread heartBeatThread;
 	private ChangeCtrlMsgThread changeCtrlMsgThread;
+	private ControlInfoReceiveThread controlInfoReceiveThread;
+	
+	private Boolean ctrlInfoThreadEnable=true;
 	public static String controlMsg="0";
 	
 	/**
@@ -143,6 +146,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 		synchronized (HeartBeatThreadEnable) {
 			HeartBeatThreadEnable=false;
 		}
+		synchronized (ctrlInfoThreadEnable) {
+			ctrlInfoThreadEnable=false;
+		}
 		backToPage();
 	}
 	
@@ -157,6 +163,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		synchronized (HeartBeatThreadEnable) {
 			HeartBeatThreadEnable=false;
+		}
+		
+		synchronized (ctrlInfoThreadEnable) {
+			ctrlInfoThreadEnable=false;
 		}
 		super.onDestroy();
 	}
@@ -256,9 +266,13 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
 		changeCtrlMsgThread.start();
+		
+		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO");
+		controlInfoReceiveThread.start();
 				
 		//开启心跳线程，确认飞机和遥控端的连接状态
 
+		
 	}
 
 	/** 设置布局中按钮的点击事件 **/
@@ -788,6 +802,48 @@ public class ControlActivity extends Activity implements OnClickListener {
 		}
 	}
 
+	
+	class ControlInfoReceiveThread extends HandlerThread{
+
+		DatagramSocket datagramSocket=null;
+		
+		public ControlInfoReceiveThread(String name) {
+			super(name);
+			// TODO Auto-generated constructor stub
+			
+			
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+
+			try {
+				datagramSocket = new DatagramSocket(UDP_SERVER_PORT);
+				byte[] controlDataByte = new byte[13];
+				DatagramPacket datagramPacket = new DatagramPacket(
+						controlDataByte, controlDataByte.length);
+				while (true && ctrlInfoThreadEnable==true) {
+					datagramSocket.receive(datagramPacket);
+					String dataString = new String(datagramPacket.getData(),
+							datagramPacket.getOffset(),
+							datagramPacket.getLength());
+					Log.i(TAG, "[UDPreceive]"+dataString);
+				}
+			} catch (SocketException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			super.run();
+		}
+		
+		
+	}
 	class MyHandler extends Handler {
 		public MyHandler() {
 
