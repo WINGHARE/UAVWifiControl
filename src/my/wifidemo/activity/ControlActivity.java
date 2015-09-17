@@ -282,7 +282,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 			sendUDPCommand("LED_OPEN1");
 			break;
 		case R.id.ButtonLED1Off:
-			sendUDPCommand("LED_CLOSE1");
+			sendUDPCommand(new byte[]{(byte)0xaa,(byte)0xaf,(byte)0x01,(byte)0x00,
+					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
+					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,});
 			break;
 		case R.id.ButtonLED2On:
 			sendUDPCommand("LED_OPEN2");
