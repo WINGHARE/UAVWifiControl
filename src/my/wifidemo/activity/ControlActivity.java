@@ -31,6 +31,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -38,11 +39,9 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.graphics.Bitmap.Config;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -60,7 +59,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.zerokol.views.JoystickView;
 import com.zerokol.views.JoystickView.OnJoystickMoveListener;
@@ -74,10 +72,7 @@ import com.zerokol.views.JoystickView.OnJoystickMoveListener;
 public class ControlActivity extends Activity implements OnClickListener {
 	public static final String TAG = "RECEIVE_ACTIVITY";
 	private int version;
-	private Boolean cameraOpenFlagBoolean = false;
-	private Boolean imageRecenable=true;
-	private Boolean HeartBeatThreadEnable=true;
-	private JoystickView joystickLeft = null;
+	
 	private Button btnLED1On = null;
 	private Button btnLED1Off = null;
 	private Button btnLED2On = null;
@@ -95,8 +90,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private TextView angleTextView = null;
 	private TextView powerTextView = null;
 	private TextView directionTextView = null;
+	private JoystickView joystickLeft = null;
+	
 	private Dialog dialog = null;
-	private ImageReceiveThread imageReceiveThread = null;
 	private ScreenObserver screenObserver=null;
 
 	// private Socket socket = null;
@@ -116,12 +112,20 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private static String ipstr = "";
 	private static int UDP_SERVER_PORT = 10086;
 	
+	private ImageReceiveThread imageReceiveThread = null;
 	private HeartBeatThread heartBeatThread;
 	private ChangeCtrlMsgThread changeCtrlMsgThread;
 	private ControlInfoReceiveThread controlInfoReceiveThread;
 	
+	private Boolean imageRecenable=true;
+	private Boolean cameraOpenFlagBoolean = false;
+	private Boolean HeartBeatThreadEnable=true;
 	private Boolean ctrlInfoThreadEnable=true;
+	
 	public static String controlMsg="0";
+	
+	private static WifiManager wifiManager;
+	private static WifiManager.MulticastLock multicastLock;
 	
 	/**
 	 * 方便其他页面可以启动该页面
@@ -261,6 +265,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		ipTextView.setText(ipstr);
 		
+		wifiManager=(WifiManager) this
+				.getSystemService(Context.WIFI_SERVICE);
+		multicastLock= wifiManager.createMulticastLock("test wifi");
+		//打开wifi广播索
+		
 		heartBeatThread=new HeartBeatThread("HEART_BEAT");
 		heartBeatThread.start();
 		
@@ -271,8 +280,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 		controlInfoReceiveThread.start();
 				
 		//开启心跳线程，确认飞机和遥控端的连接状态
-
 		
+
 	}
 
 	/** 设置布局中按钮的点击事件 **/
@@ -457,7 +466,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			Log.i(TAG, "锁屏");
 			resetButtonStatus();
 
 		}
@@ -821,6 +829,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 			// TODO Auto-generated method stub
 
 			try {
+				
+				sleep(500);
 				datagramSocket = new DatagramSocket(UDP_SERVER_PORT);
 				byte[] controlDataByte = new byte[128];
 				datagramSocket.setSoTimeout(200);
@@ -832,27 +842,31 @@ public class ControlActivity extends Activity implements OnClickListener {
 				
 				
 				Log.i(TAG,""+datagramSocket.getLocalPort()+" "+
-				datagramSocket.getLocalSocketAddress())
-				;
-				;
+				datagramSocket.getLocalSocketAddress());
 				
-				
+
 				Log.i(TAG, "[UDPSOCKET]is connected "+datagramSocket.getRemoteSocketAddress()+datagramSocket.isConnected());
 				while (ctrlInfoThreadEnable==true && datagramSocket.isConnected()) {				
 					try {
 					//	Log.i(TAG, "[UDPSOCKET] in to the while");
-
+					//	multicastLock.acquire();
 						datagramSocket.receive(datagramPacket);
+					//	multicastLock.release();
+
 						String dataString = new String(datagramPacket.getData(),
 								datagramPacket.getOffset(),
 								datagramPacket.getLength());
 						Log.i(TAG, "[UDPreceive]"+dataString);
 					}catch(SocketTimeoutException e){
-						Log.i(TAG, "[UDPSOCKET]timeout");
+						//Log.i(TAG, "[UDPSOCKET]timeout");
 					}
 					catch (IOException e) {
 						// TODO: handle exception
 					//	Log.i(TAG, "[UDPreceive]"+e);
+					}catch (Exception e) {
+						// TODO: handle exception
+					}finally{
+					//	multicastLock.release();
 
 					}
 				}
@@ -889,11 +903,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 				Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0,
 						bodyLength, options);
 				
-				
+			/*	
 				DetectFaceAsyncTask detectFaceAsyncTask=new DetectFaceAsyncTask();
 				detectFaceAsyncTask.setBitmap(bitmap);
 				detectFaceAsyncTask.execute();
-				
+				*/
 				imageViewVideo.setImageBitmap(bitmap);
 				
 				// 将从线程中获取的数据展示在UI的imageview当中。
