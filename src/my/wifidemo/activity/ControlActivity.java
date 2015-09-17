@@ -495,9 +495,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 							serverAddr, UDP_SERVER_PORT);
 					ds.send(dp);
 					count=(count+1)%2;
-					Log.i(TAG,udpMsg);
+			/*		Log.i(TAG,udpMsg);
 					Log.i(TAG,ctrString);
-
+*/
 					
 					synchronized (controlMsg) {
 						controlMsg="0";
@@ -822,20 +822,33 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 			try {
 				datagramSocket = new DatagramSocket(UDP_SERVER_PORT);
-				byte[] controlDataByte = new byte[13];
+				byte[] controlDataByte = new byte[128];
+				datagramSocket.setSoTimeout(200);
+				datagramSocket.setBroadcast(true);
 				DatagramPacket datagramPacket = new DatagramPacket(
 						controlDataByte, controlDataByte.length);
-				while (true && ctrlInfoThreadEnable==true) {
-					datagramSocket.receive(datagramPacket);
-					String dataString = new String(datagramPacket.getData(),
-							datagramPacket.getOffset(),
-							datagramPacket.getLength());
-					Log.i(TAG, "[UDPreceive]"+dataString);
+				InetAddress address=InetAddress.getByName(ipstr);
+				datagramSocket.connect(address, UDP_SERVER_PORT);
+				
+				
+				
+				Log.i(TAG, "[UDPSOCKET]is connected "+datagramSocket.getRemoteSocketAddress()+datagramSocket.isConnected());
+				while (ctrlInfoThreadEnable==true && datagramSocket.isConnected()) {				
+					try {
+					//	Log.i(TAG, "[UDPSOCKET] in to the while");
+
+						datagramSocket.receive(datagramPacket);
+						String dataString = new String(datagramPacket.getData(),
+								datagramPacket.getOffset(),
+								datagramPacket.getLength());
+						Log.i(TAG, "[UDPreceive]"+dataString);
+					} catch (IOException e) {
+						// TODO: handle exception
+					//	Log.i(TAG, "[UDPreceive]"+e);
+
+					}
 				}
 			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (Exception e) {

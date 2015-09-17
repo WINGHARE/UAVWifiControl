@@ -1,6 +1,5 @@
 package my.wifidemo.protocol;
 
-import android.R.integer;
 
 public class ControlPacket {
 
@@ -67,6 +66,9 @@ public class ControlPacket {
 		return HEADER_UNKNWON;
 	}
 	
+	/**设置本条指令协议的类型
+	 * @param typeCode int 协议类型,具体类型封装于ControlPacket中的字段当中
+	 * */
 	public void setType(int typeCode){
 		switch (typeCode) {
 		case TYPE_ADJUST:
@@ -103,10 +105,18 @@ public class ControlPacket {
 			return TYPE_PID2;
 		default:
 			break;
-		}
-		
+		}	
 		return TYPR_UNKNWON;
 	}
+	
+	/**
+	 * 设置要发送的飞行数据
+	 * @param throttle
+	 * @param yaw
+	 * @param roll
+	 * @param pitch
+	 * 
+	 * */
 	
 	public void setBody(short throttle,short yaw,short roll,short pitch ){
 	//	byte[] buffer=new byte[2];
