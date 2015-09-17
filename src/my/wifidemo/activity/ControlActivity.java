@@ -157,6 +157,21 @@ public class ControlActivity extends Activity implements OnClickListener {
 	}
 	
 	
+	
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		heartBeatThread=new HeartBeatThread("HEART_BEAT");
+		heartBeatThread.start();
+		
+		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
+		changeCtrlMsgThread.start();
+		
+		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO");
+		controlInfoReceiveThread.start();
+	}
+
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
@@ -455,12 +470,27 @@ public class ControlActivity extends Activity implements OnClickListener {
 		public void onScreenOn() {
 			// TODO Auto-generated method stub		
 
+			
 		}
 		
 		public void onScreenOff() {
 			// TODO Auto-generated method stub
 			CloseCameraThread closThread=new CloseCameraThread("CLOSECAM_LOCKSCREEN");
 			closThread.start();
+		
+			
+			synchronized (imageRecenable) {
+				imageRecenable = false;
+			}
+			
+			synchronized (HeartBeatThreadEnable) {
+				HeartBeatThreadEnable=false;
+			}
+			
+			synchronized (ctrlInfoThreadEnable) {
+				ctrlInfoThreadEnable=false;
+			}
+			
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -871,12 +901,16 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 					}
 				}
+				
+				if(datagramSocket!=null)datagramSocket.close();
 			}
 			catch (SocketException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
+			}finally{
+				if(datagramSocket!=null)datagramSocket.close();
 			}
 			super.run();
 		}
