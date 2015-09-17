@@ -831,6 +831,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 				datagramSocket.connect(address, UDP_SERVER_PORT);
 				
 				
+				Log.i(TAG,""+datagramSocket.getLocalPort()+" "+
+				datagramSocket.getLocalSocketAddress())
+				;
+				;
+				
 				
 				Log.i(TAG, "[UDPSOCKET]is connected "+datagramSocket.getRemoteSocketAddress()+datagramSocket.isConnected());
 				while (ctrlInfoThreadEnable==true && datagramSocket.isConnected()) {				
@@ -842,13 +847,17 @@ public class ControlActivity extends Activity implements OnClickListener {
 								datagramPacket.getOffset(),
 								datagramPacket.getLength());
 						Log.i(TAG, "[UDPreceive]"+dataString);
-					} catch (IOException e) {
+					}catch(SocketTimeoutException e){
+						Log.i(TAG, "[UDPSOCKET]timeout");
+					}
+					catch (IOException e) {
 						// TODO: handle exception
 					//	Log.i(TAG, "[UDPreceive]"+e);
 
 					}
 				}
-			} catch (SocketException e) {
+			}
+			catch (SocketException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (Exception e) {
