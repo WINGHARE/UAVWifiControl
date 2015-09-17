@@ -144,15 +144,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	@Override
 	public void onBackPressed() {
 		
-		synchronized (imageRecenable) {
-			imageRecenable = false;
-		}
-		synchronized (HeartBeatThreadEnable) {
-			HeartBeatThreadEnable=false;
-		}
-		synchronized (ctrlInfoThreadEnable) {
-			ctrlInfoThreadEnable=false;
-		}
+		closeControlThreads();
 		backToPage();
 	}
 	
@@ -176,17 +168,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		
-		synchronized (imageRecenable) {
-			imageRecenable = false;
-		}
-		
-		synchronized (HeartBeatThreadEnable) {
-			HeartBeatThreadEnable=false;
-		}
-		
-		synchronized (ctrlInfoThreadEnable) {
-			ctrlInfoThreadEnable=false;
-		}
+		closeControlThreads();
 		super.onDestroy();
 	}
 
@@ -202,7 +184,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 				| View.SYSTEM_UI_FLAG_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+				| View.KEEP_SCREEN_ON;
 		// This work only for android 4.4+
 		if (version >= Build.VERSION_CODES.KITKAT) {
 
@@ -476,20 +459,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 		public void onScreenOff() {
 			// TODO Auto-generated method stub
 			CloseCameraThread closThread=new CloseCameraThread("CLOSECAM_LOCKSCREEN");
-			closThread.start();
-		
-			
-			synchronized (imageRecenable) {
-				imageRecenable = false;
-			}
-			
-			synchronized (HeartBeatThreadEnable) {
-				HeartBeatThreadEnable=false;
-			}
-			
-			synchronized (ctrlInfoThreadEnable) {
-				ctrlInfoThreadEnable=false;
-			}
+			closThread.start();		
+			closeControlThreads();
 			
 			try {
 				Thread.sleep(500);
@@ -1138,6 +1109,20 @@ public class ControlActivity extends Activity implements OnClickListener {
 			if (ds != null) {
 				ds.close();
 			}
+		}
+	}
+	/**
+	 * 改变线程的标记位关闭相应的线程
+	 * */
+	private void closeControlThreads(){
+		synchronized (imageRecenable) {
+			imageRecenable = false;
+		}
+		synchronized (HeartBeatThreadEnable) {
+			HeartBeatThreadEnable=false;
+		}
+		synchronized (ctrlInfoThreadEnable) {
+			ctrlInfoThreadEnable=false;
 		}
 	}
 
