@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import my.wifidemo.R;
+import my.wifidemo.R.id;
 import my.wifidemo.observer.ScreenObserver;
 import my.wifidemo.observer.ScreenObserver.ScreenStateListener;
 import android.annotation.SuppressLint;
@@ -128,6 +129,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private static WifiManager wifiManager;
 	private static WifiManager.MulticastLock multicastLock;
 	
+	private DatagramSocket datagramSocket;
+	
 	/**
 	 * 方便其他页面可以启动该页面
 	 * @param context Context当前上下文
@@ -163,13 +166,13 @@ public class ControlActivity extends Activity implements OnClickListener {
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		heartBeatThread=new HeartBeatThread("HEART_BEAT");
+		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket);
 		heartBeatThread.start();
 		
 		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
 		changeCtrlMsgThread.start();
 		
-		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO");
+		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
 		controlInfoReceiveThread.start();
 	}
 
@@ -277,13 +280,13 @@ public class ControlActivity extends Activity implements OnClickListener {
 		multicastLock= wifiManager.createMulticastLock("test wifi");
 		//打开wifi广播索
 		
-		heartBeatThread=new HeartBeatThread("HEART_BEAT");
+		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket);
 		heartBeatThread.start();
 		
 		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
 		changeCtrlMsgThread.start();
 		
-		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO");
+		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
 		controlInfoReceiveThread.start();
 				
 		//开启心跳线程，确认飞机和遥控端的连接状态
@@ -295,15 +298,16 @@ public class ControlActivity extends Activity implements OnClickListener {
 	public void onClick(View view) {
 		switch (view.getId()) {
 		case R.id.ButtonLED1On:
-			sendUDPCommand("LED_OPEN1");
+			sendUDPCommand("LED_OPEN1",datagramSocket);
 			break;
 		case R.id.ButtonLED1Off:
 			sendUDPCommand(new byte[]{(byte)0xaa,(byte)0xaf,(byte)0x01,(byte)0x00,
 					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
-					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,});
+					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,},
+					datagramSocket);
 			break;
 		case R.id.ButtonLED2On:
-			sendUDPCommand("LED_OPEN2");
+			sendUDPCommand("LED_OPEN2",datagramSocket);
 			
 			
 			imageViewVideo.setDrawingCacheEnabled(true);
@@ -319,13 +323,13 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 			break;
 		case R.id.ButtonLED2Off:
-			sendUDPCommand("TCP_EXCEPTION");
+			sendUDPCommand("TCP_EXCEPTION",datagramSocket);
 			break;
 		case R.id.ButtonLED3On:
-			sendUDPCommand("JDQ_OPEN");
+			sendUDPCommand("JDQ_OPEN",datagramSocket);
 			break;
 		case R.id.ButtonLED3Off:
-			sendUDPCommand("JDQ_CLOSE");
+			sendUDPCommand("JDQ_CLOSE",datagramSocket);
 			break;
 		case R.id.ButtonOpenCamera: {
 
@@ -491,9 +495,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 		private String ctrString="";
 		private int count=0;
 		//public Handler mHandler;
-		public HeartBeatThread(String name) {
+		public HeartBeatThread(String name,DatagramSocket datagramSocket) {
 			super(name);
 			// TODO Auto-generated constructor stub
+			ds=datagramSocket;
 		}
 		
 
@@ -502,9 +507,12 @@ public class ControlActivity extends Activity implements OnClickListener {
 			
 			
 			try {
-				ds = new DatagramSocket();
-				InetAddress serverAddr = InetAddress.getByName(ipstr);
+				if(ds==null){
+					
+					ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+				}
 				
+				InetAddress serverAddr = InetAddress.getByName(ipstr);
 				while(true && HeartBeatThreadEnable){
 					
 					DatagramPacket dp;
@@ -786,26 +794,26 @@ public class ControlActivity extends Activity implements OnClickListener {
 				// TODO: handle exception
 				dismissDialog();
 				displayDialog("服务器连接超时");
-				sendTCPException();
+				sendTCPException(datagramSocket);
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				dismissDialog();
 				displayDialog("主机地址错误");
-				sendTCPException();
+				sendTCPException(datagramSocket);
 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				dismissDialog();
 				displayDialog("读写数据时出现问题");
-				sendTCPException();
+				sendTCPException(datagramSocket);
 
 			}catch(ArrayIndexOutOfBoundsException e){ 
 				e.printStackTrace();
 				dismissDialog();
 				displayDialog("数组溢出");
-				sendTCPException();
+				sendTCPException(datagramSocket);
 			}
 			finally {
 				try {
@@ -816,7 +824,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 					dismissDialog();
 					displayDialog("关闭主机时出现问题");
 					resetButtonStatus();
-					sendTCPException();
+					sendTCPException(datagramSocket);
 				}
 			}
 		}
@@ -827,10 +835,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 		DatagramSocket datagramSocket=null;
 		
-		public ControlInfoReceiveThread(String name) {
+		public ControlInfoReceiveThread(String name,DatagramSocket ds) {
 			super(name);
 			// TODO Auto-generated constructor stub
-			
+			datagramSocket=ds;
 			
 		}
 
@@ -841,7 +849,12 @@ public class ControlActivity extends Activity implements OnClickListener {
 			try {
 				
 				sleep(500);
-				datagramSocket = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+				
+				if(datagramSocket==null){
+					
+					datagramSocket = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+					
+				}
 				byte[] controlDataByte = new byte[128];
 				datagramSocket.setSoTimeout(200);
 				datagramSocket.setBroadcast(true);
@@ -1015,16 +1028,18 @@ public class ControlActivity extends Activity implements OnClickListener {
 	 * @param command
 	 *            String 需要发送的信号
 	 * */
-	private void sendUDPCommand(final String command) {
+	private void sendUDPCommand(final String command,final DatagramSocket datagramSocket) {
 
 		new Thread() {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
 				String udpMsg = command;
-				DatagramSocket ds = null;
+				DatagramSocket ds = datagramSocket;
 				try {
-					ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+					if (ds == null) {
+						ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+					}
 					InetAddress serverAddr = InetAddress.getByName(ipstr);
 					DatagramPacket dp;
 					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
@@ -1056,16 +1071,19 @@ public class ControlActivity extends Activity implements OnClickListener {
 	 * @param data
 	 *            byte[] 需要发送的字节码
 	 * */
-	private void sendUDPCommand(final byte[] data) {
+	private void sendUDPCommand(final byte[] data,final DatagramSocket datagramSocket) {
 
 		new Thread() {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
 			//	String udpMsg = command;
-				DatagramSocket ds = null;
+				DatagramSocket ds = datagramSocket;
 				try {
-					ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+					if(ds==null){
+						
+						ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+					}
 					InetAddress serverAddr = InetAddress.getByName(ipstr);
 					DatagramPacket dp;
 					dp = new DatagramPacket(data, data.length,
@@ -1095,11 +1113,14 @@ public class ControlActivity extends Activity implements OnClickListener {
 	 * 使用UDP向开发板发送TCP错误
 	 * 
 	 * */
-	private void sendTCPException() {
+	private void sendTCPException(DatagramSocket datagramSocket) {
 		String udpMsg = "TCP_EXCEPTION";
 		DatagramSocket ds = null;
+		
+		ds=datagramSocket;
 		try {
-			ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+			if(ds==null)
+				{ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);}
 			InetAddress serverAddr = InetAddress.getByName(ipstr);
 			DatagramPacket dp;
 			dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
