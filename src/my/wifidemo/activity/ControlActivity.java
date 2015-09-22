@@ -289,8 +289,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 		try {
 			datagramSocket=new DatagramSocket(UDP_SERVER_PORT_LOCAL);
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			Log.e(TAG, "[UDPSOCKET]创建socket失败");
 		}
 		
 		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket);
@@ -532,6 +532,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		private String udpMsg="";
 		private String ctrString="";
 		private int count=0;
+		private boolean flags=true;
 		//public Handler mHandler;
 		public HeartBeatThread(String name,DatagramSocket datagramSocket) {
 			super(name);
@@ -869,6 +870,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 	}
 
 	
+	/**
+	 * 接收来自飞机的飞行信息的线程
+	 * */
+	
 	class ControlInfoReceiveThread extends HandlerThread{
 
 		DatagramSocket datagramSocket=null;
@@ -947,6 +952,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		
 	}
+	
+	/**
+	 * 主线程的handler*/
 	class MyHandler extends Handler {
 		public MyHandler() {
 
