@@ -609,7 +609,12 @@ public class ControlActivity extends Activity implements OnClickListener {
 					
 					controlPacket=mControlPacket;
 					udpMsg=controlMsg;
-					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
+					
+					byte[] command=controlPacket.getCommand();
+				/*	dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
+							serverAddr, UDP_SERVER_PORT);*/
+					
+					dp = new DatagramPacket(command, command.length,
 							serverAddr, UDP_SERVER_PORT);
 					ds.send(dp);
 					count=(count+1)%2;
@@ -619,6 +624,16 @@ public class ControlActivity extends Activity implements OnClickListener {
 					
 					synchronized (controlMsg) {
 						controlMsg="0";
+					}
+					
+					synchronized (mControlPacket) {
+						
+						if (mControlPacket==null) {
+							mControlPacket=new ControlPacket();
+						}
+						mControlPacket.setHeader(ControlPacket.HEADER_OUT);
+						mControlPacket.setType(ControlPacket.TYPE_CONTROL);
+						mControlPacket.setBody(0, 0, 0, 0);
 					}
 					sleep(125);
 				}
@@ -975,7 +990,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 						String dataString = new String(datagramPacket.getData(),
 								datagramPacket.getOffset(),
 								datagramPacket.getLength());
-						Log.d(TAG, "[UDPreceive]"+dataString);
+						
+						ControlPacket controlPacket=new ControlPacket(datagramPacket.getData());
+						Log.d(TAG, "[UDPreceive]"+dataString+
+								controlPacket.getPacketString());
+						
 					}catch(SocketTimeoutException e){
 						//Log.i(TAG, "[UDPSOCKET]timeout");
 					}

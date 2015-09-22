@@ -188,6 +188,11 @@ public class ControlPacket {
 		
 		return bytesToHexString(command);
 	}
+	public byte[] getCommand() {
+		return command;
+	}
+	
+	
 	
 }
 
