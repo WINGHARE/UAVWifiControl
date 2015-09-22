@@ -1,5 +1,7 @@
 package my.wifidemo.protocol;
 
+import java.io.UnsupportedEncodingException;
+
 
 public class ControlPacket {
 
@@ -50,6 +52,8 @@ public class ControlPacket {
 		default:
 			break;
 		}
+		
+		calculateChecksum();
 	}
 	
 	public int judgeHeaderType(){
@@ -89,6 +93,8 @@ public class ControlPacket {
 		default:
 			break;
 		}
+		
+		calculateChecksum();
 	}
 	
 	public int getType(){
@@ -129,6 +135,24 @@ public class ControlPacket {
 		command[11]=(byte)(pitch & 0xFF);
 		command[12]=(byte)(pitch>>8 & 0xFF);
 		
+		calculateChecksum();
+		
+	}
+	
+	public void setBody(int throttle,int yaw,int roll,int pitch ){
+		
+		    short[] temp={(short) throttle,(short) yaw,(short) roll,(short) pitch};
+			command[5]=(byte)(temp[0] & 0xFF);
+			command[6]=(byte)(temp[0]>>8 & 0xFF);
+			command[7]=(byte)(temp[1] & 0xFF);
+			command[8]=(byte)(temp[1]>>8 & 0xFF);
+			command[9]=(byte)(temp[2] & 0xFF);
+			command[10]=(byte)(temp[2]>>8 & 0xFF);
+			command[11]=(byte)(temp[3] & 0xFF);
+			command[12]=(byte)(temp[3]>>8 & 0xFF);
+			
+			calculateChecksum();
+			
 	}
 
 	public void calculateChecksum(){
@@ -142,6 +166,28 @@ public class ControlPacket {
 		return command[12];
 	}
 	
+	
+	/** *//**  
+	    * 把字节数组转换成16进制字符串  
+	    * @param bArray  
+	    * @return  
+	    */   
+	private String bytesToHexString(byte[] bArray) {   
+	    StringBuffer sb = new StringBuffer(bArray.length);   
+	    String sTemp;   
+	    for (int i = 0; i < bArray.length; i++) {   
+	     sTemp = Integer.toHexString(0xFF & bArray[i]);   
+	     if (sTemp.length() < 2)   
+	      sb.append(0);   
+	     sb.append(sTemp.toUpperCase());   
+	    }   
+	    return sb.toString();   
+	}  
+	
+	public String getPacketString(){
+		
+		return bytesToHexString(command);
+	}
 	
 }
 

@@ -24,6 +24,7 @@ import my.wifidemo.R;
 import my.wifidemo.R.id;
 import my.wifidemo.observer.ScreenObserver;
 import my.wifidemo.observer.ScreenObserver.ScreenStateListener;
+import my.wifidemo.protocol.ControlPacket;
 import my.wifidemo.views.VerticalSeekBar;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -77,6 +78,46 @@ public class ControlActivity extends Activity implements OnClickListener {
 	public static final String TAG = "RECEIVE_ACTIVITY";
 	private int version;
 	
+	public static Boolean getImageRecenable() {
+		return imageRecenable;
+	}
+
+	public static void setImageRecenable(Boolean imageRecenable) {
+		ControlActivity.imageRecenable = imageRecenable;
+	}
+
+	public static Boolean getCameraOpenFlagBoolean() {
+		return cameraOpenFlagBoolean;
+	}
+
+	public static void setCameraOpenFlagBoolean(Boolean cameraOpenFlagBoolean) {
+		ControlActivity.cameraOpenFlagBoolean = cameraOpenFlagBoolean;
+	}
+
+	public static Boolean getHeartBeatThreadEnable() {
+		return HeartBeatThreadEnable;
+	}
+
+	public static void setHeartBeatThreadEnable(Boolean heartBeatThreadEnable) {
+		HeartBeatThreadEnable = heartBeatThreadEnable;
+	}
+
+	public static Boolean getCtrlInfoThreadEnable() {
+		return ctrlInfoThreadEnable;
+	}
+
+	public static void setCtrlInfoThreadEnable(Boolean ctrlInfoThreadEnable) {
+		ControlActivity.ctrlInfoThreadEnable = ctrlInfoThreadEnable;
+	}
+
+	public static String getControlMsg() {
+		return controlMsg;
+	}
+
+	public static void setControlMsg(String controlMsg) {
+		ControlActivity.controlMsg = controlMsg;
+	}
+
 	private Button btnLED1On = null;
 	private Button btnLED1Off = null;
 	private Button btnLED2On = null;
@@ -123,12 +164,14 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private ChangeCtrlMsgThread changeCtrlMsgThread;
 	private ControlInfoReceiveThread controlInfoReceiveThread;
 	
-	private Boolean imageRecenable=true;
-	private Boolean cameraOpenFlagBoolean = false;
-	private Boolean HeartBeatThreadEnable=true;
-	private Boolean ctrlInfoThreadEnable=true;
+	private static Boolean imageRecenable=true;
+	private static Boolean cameraOpenFlagBoolean = false;
+	private static Boolean HeartBeatThreadEnable=true;
+	private static Boolean ctrlInfoThreadEnable=true;
 	
 	public static String controlMsg="0";
+	public static ControlPacket mControlPacket;
+	
 	
 	private static WifiManager wifiManager;
 	private static WifiManager.MulticastLock multicastLock;
@@ -170,7 +213,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket);
+		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
 		heartBeatThread.start();
 		
 		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
@@ -293,7 +336,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 			Log.e(TAG, "[UDPSOCKET]创建socket失败");
 		}
 		
-		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket);
+		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
 		heartBeatThread.start();
 		
 		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
@@ -492,6 +535,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		public void onProgressChanged(SeekBar arg0, int progress, boolean fromUser) {
 			// TODO Auto-generated method stub
+			ControlPacket controlPacket=new ControlPacket();
+			controlPacket.setHeader(ControlPacket.HEADER_OUT);
+			controlPacket.setType(ControlPacket.TYPE_CONTROL);
+			controlPacket.setBody((short)progress,(short) 0,(short) 0,(short) 0);
+			controlPacket.calculateChecksum();
 			Log.i(TAG, ""+progress);
 		}
 	};
@@ -531,11 +579,14 @@ public class ControlActivity extends Activity implements OnClickListener {
 		private DatagramSocket ds=null;
 		private String udpMsg="";
 		private String ctrString="";
+		private ControlPacket controlPacket;
 		private int count=0;
 		private boolean flags=true;
+		private Context mContext;
 		//public Handler mHandler;
-		public HeartBeatThread(String name,DatagramSocket datagramSocket) {
+		public HeartBeatThread(String name,DatagramSocket datagramSocket,Context context) {
 			super(name);
+			mContext=context;
 			// TODO Auto-generated constructor stub
 			ds=datagramSocket;
 		}
@@ -552,9 +603,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 				}
 				
 				InetAddress serverAddr = InetAddress.getByName(ipstr);
-				while(true && HeartBeatThreadEnable){
+				while(true && ControlActivity.HeartBeatThreadEnable){
 					
 					DatagramPacket dp;
+					
+					controlPacket=mControlPacket;
 					udpMsg=controlMsg;
 					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
 							serverAddr, UDP_SERVER_PORT);
