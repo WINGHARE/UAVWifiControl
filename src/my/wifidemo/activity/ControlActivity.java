@@ -77,46 +77,6 @@ import com.zerokol.views.JoystickView.OnJoystickMoveListener;
 public class ControlActivity extends Activity implements OnClickListener {
 	public static final String TAG = "RECEIVE_ACTIVITY";
 	private int version;
-	
-	public static Boolean getImageRecenable() {
-		return imageRecenable;
-	}
-
-	public static void setImageRecenable(Boolean imageRecenable) {
-		ControlActivity.imageRecenable = imageRecenable;
-	}
-
-	public static Boolean getCameraOpenFlagBoolean() {
-		return cameraOpenFlagBoolean;
-	}
-
-	public static void setCameraOpenFlagBoolean(Boolean cameraOpenFlagBoolean) {
-		ControlActivity.cameraOpenFlagBoolean = cameraOpenFlagBoolean;
-	}
-
-	public static Boolean getHeartBeatThreadEnable() {
-		return HeartBeatThreadEnable;
-	}
-
-	public static void setHeartBeatThreadEnable(Boolean heartBeatThreadEnable) {
-		HeartBeatThreadEnable = heartBeatThreadEnable;
-	}
-
-	public static Boolean getCtrlInfoThreadEnable() {
-		return ctrlInfoThreadEnable;
-	}
-
-	public static void setCtrlInfoThreadEnable(Boolean ctrlInfoThreadEnable) {
-		ControlActivity.ctrlInfoThreadEnable = ctrlInfoThreadEnable;
-	}
-
-	public static String getControlMsg() {
-		return controlMsg;
-	}
-
-	public static void setControlMsg(String controlMsg) {
-		ControlActivity.controlMsg = controlMsg;
-	}
 
 	private Button btnLED1On = null;
 	private Button btnLED1Off = null;
@@ -170,7 +130,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private static Boolean ctrlInfoThreadEnable=true;
 	
 	public static String controlMsg="0";
-	public static ControlPacket mControlPacket;
+	public static ControlPacket mControlPacket=new ControlPacket();
 	
 	
 	private static WifiManager wifiManager;
@@ -197,6 +157,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		closeControlThreads();
 		backToPage();
+		datagramSocket.close();
 	}
 	
 	
@@ -221,6 +182,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
 		controlInfoReceiveThread.start();
+		
 	}
 
 	@Override
@@ -335,6 +297,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 			e.printStackTrace();
 			Log.e(TAG, "[UDPSOCKET]创建socket失败");
 		}
+		
+	
 		
 		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
 		heartBeatThread.start();
@@ -540,7 +504,12 @@ public class ControlActivity extends Activity implements OnClickListener {
 			controlPacket.setType(ControlPacket.TYPE_CONTROL);
 			controlPacket.setBody((short)progress,(short) 0,(short) 0,(short) 0);
 			controlPacket.calculateChecksum();
-			Log.i(TAG, ""+progress);
+			
+			synchronized (mControlPacket) {
+				mControlPacket=controlPacket;
+			}
+			sendUDPCommand(controlPacket.getCommand(), datagramSocket);
+		//	Log.i(TAG, ""+progress);
 		}
 	};
 	
@@ -607,6 +576,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 					
 					DatagramPacket dp;
 					
+                   
+					
 					controlPacket=mControlPacket;
 					udpMsg=controlMsg;
 					
@@ -626,7 +597,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 						controlMsg="0";
 					}
 					
-					synchronized (mControlPacket) {
+					/*synchronized (mControlPacket) {
 						
 						if (mControlPacket==null) {
 							mControlPacket=new ControlPacket();
@@ -634,7 +605,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 						mControlPacket.setHeader(ControlPacket.HEADER_OUT);
 						mControlPacket.setType(ControlPacket.TYPE_CONTROL);
 						mControlPacket.setBody(0, 0, 0, 0);
-					}
+					}*/
 					sleep(125);
 				}
 			} catch (SocketException e) {
@@ -966,7 +937,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 					datagramSocket = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
 					
 				}
-				byte[] controlDataByte = new byte[128];
+				byte[] controlDataByte = new byte[13];
 				datagramSocket.setSoTimeout(200);
 				datagramSocket.setBroadcast(true);
 				DatagramPacket datagramPacket = new DatagramPacket(
@@ -991,9 +962,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 								datagramPacket.getOffset(),
 								datagramPacket.getLength());
 						
+						
 						ControlPacket controlPacket=new ControlPacket(datagramPacket.getData());
-						Log.d(TAG, "[UDPreceive]"+dataString+
-								controlPacket.getPacketString());
+						String str=controlPacket.getPacketString();
+						Log.d(TAG, "[UDPreceive]"+str);
 						
 					}catch(SocketTimeoutException e){
 						//Log.i(TAG, "[UDPSOCKET]timeout");

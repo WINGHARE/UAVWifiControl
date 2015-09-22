@@ -151,14 +151,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btnLED3On" 
-                    android:visibility="visible"/>
+                    android:visibility="gone"/>
 
                 <Button
                     android:id="@+id/ButtonLED3Off"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btnLED3Off"
-                    android:visibility="visible"/>
+                    android:visibility="gone"/>
 
                 <Button
                     android:id="@+id/ButtonLED1On"
