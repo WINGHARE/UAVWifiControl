@@ -111,6 +111,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 	private static String ipstr = "";
 	private static int UDP_SERVER_PORT = 10086;
+	private static int UDP_SERVER_PORT_LOCAL=12306;
 	
 	private ImageReceiveThread imageReceiveThread = null;
 	private HeartBeatThread heartBeatThread;
@@ -460,7 +461,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		public void onScreenOn() {
 			// TODO Auto-generated method stub		
-
 			
 		}
 		
@@ -841,7 +841,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 			try {
 				
 				sleep(500);
-				datagramSocket = new DatagramSocket(UDP_SERVER_PORT);
+				datagramSocket = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
 				byte[] controlDataByte = new byte[128];
 				datagramSocket.setSoTimeout(200);
 				datagramSocket.setBroadcast(true);
@@ -1024,7 +1024,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				String udpMsg = command;
 				DatagramSocket ds = null;
 				try {
-					ds = new DatagramSocket();
+					ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
 					InetAddress serverAddr = InetAddress.getByName(ipstr);
 					DatagramPacket dp;
 					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
@@ -1065,7 +1065,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 			//	String udpMsg = command;
 				DatagramSocket ds = null;
 				try {
-					ds = new DatagramSocket();
+					ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
 					InetAddress serverAddr = InetAddress.getByName(ipstr);
 					DatagramPacket dp;
 					dp = new DatagramPacket(data, data.length,
@@ -1099,7 +1099,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		String udpMsg = "TCP_EXCEPTION";
 		DatagramSocket ds = null;
 		try {
-			ds = new DatagramSocket();
+			ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
 			InetAddress serverAddr = InetAddress.getByName(ipstr);
 			DatagramPacket dp;
 			dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
