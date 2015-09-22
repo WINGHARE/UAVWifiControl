@@ -336,12 +336,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 			Bitmap detectBitmap = Bitmap.createBitmap(imageViewVideo
 					.getDrawingCache());
 			imageViewVideo.setDrawingCacheEnabled(false);
-			
-			DetectFaceAsyncTask detectFaceAsyncTask=new DetectFaceAsyncTask();
-			detectFaceAsyncTask.setBitmap(detectBitmap);
-			detectFaceAsyncTask.execute();
-			
-           // new DetectFaceAsyncTask(detectBitmap).execute();
 
 			break;
 		case R.id.ButtonLED2Off:
@@ -618,7 +612,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				e.printStackTrace();
 			} finally {
 				if (ds != null) {
-					ds.close();
+				//	ds.close();
 				}
 			}
 		//	Looper.loop();
@@ -989,7 +983,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}finally{
-				if(datagramSocket!=null)datagramSocket.close();
+			//	if(datagramSocket!=null)datagramSocket.close();
 			}
 			super.run();
 		}
@@ -1278,131 +1272,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 		finish();
 	}
 	
-	/**
-	 * 开启异步任务进行人脸识别*/
-	
-	private class DetectFaceAsyncTask extends AsyncTask<String, Integer, Integer>
-    {
-        private Bitmap bitmap;
-        private Bitmap faceBitmap;
-        private Bitmap maskBitmap;
-        private static final int N_MAX=2;
-       
-        
-        private DetectFaceAsyncTask()
-        {
-        }
-        private DetectFaceAsyncTask(Bitmap bitmap)
-        {
-            this.bitmap = bitmap;
-        }
-
-        @Override
-        protected Integer doInBackground(String... arg0)
-        {
-            return detectFace(this.bitmap);
-        }
-
-        @Override
-        protected void onPostExecute(Integer faceCount)
-        {
-            super.onPostExecute(faceCount);
-            if(faceCount>0){
-            	imageViewMask.setImageBitmap(this.maskBitmap);
-            	
-            }
-            else{
-            	
-            	imageViewMask.setImageResource(R.drawable.bg_mask);
-
-            }
-            //将方框绘制在MASK层上面
-            Toast.makeText(getApplicationContext(), "检测到人脸: " + faceCount, Toast.LENGTH_SHORT)
-                    .show();
-            
-            
-        }
-        
-        public void setBitmap(Bitmap bmp){
-        	this.bitmap=bmp;
-        }
-
-        
-        /**
-         * 步任务处理图像的具体过程
-         * @param bitmap Bitmap将需要被识别的图片加载进异步任务当中
-         *  */
-        
-        private int detectFace(Bitmap bitmap)
-        {
-            Log.i(TAG, "Begin face detect");
-            if (bitmap == null)
-            {
-               //bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.test);
-            	return 0;
-            }
-
-            this.faceBitmap = bitmap.copy(Config.RGB_565, true);
-            int width = this.faceBitmap.getWidth();
-            int height = this.faceBitmap.getHeight();
-            Log.i(TAG, "待检测图像: w = " + width + ", h = " + height);
-           
-            int detectedFaceCount = 0;
-            
-            Log.i(TAG, "Start face detect");
-            FaceDetector.Face[] faces = new FaceDetector.Face[N_MAX];
-            FaceDetector faceDetector = new FaceDetector(width, height, N_MAX);
-            detectedFaceCount = faceDetector.findFaces(this.faceBitmap, faces);
-            Log.i(TAG, "检测到人脸：" + detectedFaceCount);
-            Log.i(TAG, "Stop face detect");
-            
-            drawFaces(faces, detectedFaceCount);
-            
-            Log.i(TAG, "End face detect");
-
-            return detectedFaceCount;
-        }
-        
-        /**
-         * 在检测到的人脸上面绘制方框
-         * */
-
-        private void drawFaces(FaceDetector.Face[] faces, int detectedFaceCount)
-        {
-            for (int i = 0; i < detectedFaceCount; i++)
-            {
-            	Resources res=getResources();               
-            	BitmapFactory.Options options = new BitmapFactory.Options();
-            	options.inMutable=true;
-            	maskBitmap=BitmapFactory.decodeResource(res, R.drawable.bg_mask,options);
-            	
-            	float scalex =(float) (1920.0/faceBitmap.getWidth());
-            	float scaley =(float) (1080.0/faceBitmap.getHeight());
-
-                Face f = faces[i];
-                PointF midPoint = new PointF();
-                float dis = f.eyesDistance();
-                f.getMidPoint(midPoint);
-                int dd = (int) (dis);
-                Point eyeLeft = new Point((int) ((midPoint.x - dis / 2)*scalex), (int) (midPoint.y*scaley));
-                Point eyeRight = new Point((int) ((midPoint.x + dis / 2)*scalex), (int) ((midPoint.y)*scaley));
-                Rect faceRect = new Rect((int) ((midPoint.x - dd)*scalex), (int)( (midPoint.y - dd)*scaley),
-                        (int) ((midPoint.x + dd)*scalex), (int) ((midPoint.y + dd)*scaley));
-                Log.i(TAG, scalex+" "+scaley + "左眼坐标 x = " + eyeLeft.x + ", y = " + eyeLeft.y);
-
-                //在画面遮罩层上绘制方框
-                Canvas canvas = new Canvas(maskBitmap);
-                Paint p = new Paint();
-                p.setAntiAlias(true);
-                p.setStrokeWidth(8);
-                p.setStyle(Paint.Style.STROKE);
-                p.setColor(Color.GREEN);
-                canvas.drawCircle(eyeLeft.x, eyeLeft.y, 20, p);
-                canvas.drawCircle(eyeRight.x, eyeRight.y, 20, p);
-                canvas.drawRect(faceRect, p);
-            }
-        }
-    }
 
 	@SuppressLint("NewApi")
 	@Override
