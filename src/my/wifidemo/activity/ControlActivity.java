@@ -280,6 +280,14 @@ public class ControlActivity extends Activity implements OnClickListener {
 		multicastLock= wifiManager.createMulticastLock("test wifi");
 		//打开wifi广播索
 		
+		
+		try {
+			datagramSocket=new DatagramSocket(UDP_SERVER_PORT_LOCAL);
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket);
 		heartBeatThread.start();
 		
@@ -871,7 +879,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				Log.i(TAG, "[UDPSOCKET]is connected "+datagramSocket.getRemoteSocketAddress()+datagramSocket.isConnected());
 				while (ctrlInfoThreadEnable==true && datagramSocket.isConnected()) {				
 					try {
-						Log.i(TAG, "[UDPSOCKET] in to the while");
+					//	Log.i(TAG, "[UDPSOCKET] in to the while");
 					//	multicastLock.acquire();
 						datagramSocket.receive(datagramPacket);
 					//	multicastLock.release();
@@ -1055,7 +1063,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 					e.printStackTrace();
 				} finally {
 					if (ds != null) {
-						ds.close();
+					//	ds.close();
 					}
 				}
 				super.run();
@@ -1099,7 +1107,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 					e.printStackTrace();
 				} finally {
 					if (ds != null) {
-						ds.close();
+					//	ds.close();
 					}
 				}
 				super.run();
@@ -1136,7 +1144,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 			e.printStackTrace();
 		} finally {
 			if (ds != null) {
-				ds.close();
+			//	ds.close();
 			}
 		}
 	}
