@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="fill_parent"
     android:orientation="horizontal"
-    android:background="#aaaaaa">
+    android:background="#77778899">
 
     <RelativeLayout
         android:layout_width="fill_parent"

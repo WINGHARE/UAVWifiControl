@@ -95,6 +95,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private TextView angleTextView = null;
 	private TextView powerTextView = null;
 	private TextView directionTextView = null;
+	private TextView throttleTextView =null;
 	private JoystickView joystickLeft = null;
 	private VerticalSeekBar throttleSeekBar=null;
 	
@@ -131,10 +132,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 	
 	public static String controlMsg="0";
 	public static ControlPacket mControlPacket=new ControlPacket();
-	
-	
-	private static WifiManager wifiManager;
-	private static WifiManager.MulticastLock multicastLock;
 	
 	private DatagramSocket datagramSocket;
 	
@@ -247,6 +244,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		angleTextView = (TextView) findViewById(R.id.textViewAngle);
 		powerTextView = (TextView) findViewById(R.id.textViewPower);
 		directionTextView = (TextView) findViewById(R.id.textViewDirection);
+		throttleTextView=(TextView)findViewById(R.id.textViewFlightHeight);
 		joystickLeft = (JoystickView) findViewById(R.id.joystickLeft);
 		throttleSeekBar=(VerticalSeekBar)findViewById(R.id.SeekBarHeight);
 
@@ -284,11 +282,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 		//获得IP地址和端口号
 		
 		ipTextView.setText(ipstr);
-		
-		wifiManager=(WifiManager) this
-				.getSystemService(Context.WIFI_SERVICE);
-		multicastLock= wifiManager.createMulticastLock("test wifi");
-		//打开wifi广播索
 		
 		
 		try {
@@ -496,8 +489,17 @@ public class ControlActivity extends Activity implements OnClickListener {
 			ControlPacket controlPacket=new ControlPacket();
 			controlPacket.setHeader(ControlPacket.HEADER_OUT);
 			controlPacket.setType(ControlPacket.TYPE_CONTROL);
-			controlPacket.setBody((short)progress,(short) 0,(short) 0,(short) 0);
+			
+			int throttle=(progress*5==500)?(499):(progress*5);
+			controlPacket.setBody(throttle,0,0,0);
+			
+			
+			throttleTextView.setText(""+controlPacket.getThrottle());
+			Log.d(TAG,""+controlPacket.getThrottle());
+			
+			
 			controlPacket.calculateChecksum();
+			
 			
 			synchronized (mControlPacket) {
 				mControlPacket=controlPacket;
@@ -947,10 +949,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				Log.i(TAG, "[UDPSOCKET]is connected "+datagramSocket.getRemoteSocketAddress()+datagramSocket.isConnected());
 				while (ctrlInfoThreadEnable==true && datagramSocket.isConnected()) {				
 					try {
-					//	Log.i(TAG, "[UDPSOCKET] in to the while");
-					//	multicastLock.acquire();
 						datagramSocket.receive(datagramPacket);
-					//	multicastLock.release();
 
 						String dataString = new String(datagramPacket.getData(),
 								datagramPacket.getOffset(),
@@ -1008,7 +1007,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				byte[] buffer = (byte[]) msg.obj;
 				int bodyLength = msg.arg1;
 				BitmapFactory.Options options = new BitmapFactory.Options();
-				options.inSampleSize = 2;
+				options.inSampleSize = 1;
 				options.inMutable=true;
 				options.inPreferredConfig=Bitmap.Config.RGB_565;
 				Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0,
@@ -1199,31 +1198,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 	 * */
 	private void sendTCPException(DatagramSocket datagramSocket) {
 		String udpMsg = "TCP_EXCEPTION";
-		DatagramSocket ds = null;
-		
-		ds=datagramSocket;
-		try {
-			if(ds==null)
-				{ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);}
-			InetAddress serverAddr = InetAddress.getByName(ipstr);
-			DatagramPacket dp;
-			dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
-					serverAddr, UDP_SERVER_PORT);
-			ds.send(dp);
-		} catch (SocketException e) {
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (ds != null) {
-			//	ds.close();
-			}
-		}
+		sendUDPCommand(udpMsg, datagramSocket);
 	}
+	
 	/**
 	 * 改变线程的标记位关闭相应的线程
 	 * */

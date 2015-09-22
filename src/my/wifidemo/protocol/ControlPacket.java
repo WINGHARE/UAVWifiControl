@@ -1,6 +1,8 @@
 package my.wifidemo.protocol;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 
 public class ControlPacket {
@@ -127,32 +129,20 @@ public class ControlPacket {
 	public void setBody(short throttle,short yaw,short roll,short pitch ){
 	//	byte[] buffer=new byte[2];
 		command[5]=(byte)(throttle & 0xFF);
-		command[6]=(byte)(throttle>>8 & 0xFF);
+		command[4]=(byte)(throttle>>8 & 0xFF);
 		command[7]=(byte)(yaw & 0xFF);
-		command[8]=(byte)(yaw>>8 & 0xFF);
+		command[6]=(byte)(yaw>>8 & 0xFF);
 		command[9]=(byte)(roll & 0xFF);
-		command[10]=(byte)(roll>>8 & 0xFF);
+		command[8]=(byte)(roll>>8 & 0xFF);
 		command[11]=(byte)(pitch & 0xFF);
-		command[12]=(byte)(pitch>>8 & 0xFF);
+		command[10]=(byte)(pitch>>8 & 0xFF);
 		
 		calculateChecksum();
 		
 	}
 	
-	public void setBody(int throttle,int yaw,int roll,int pitch ){
-		
-		    short[] temp={(short) throttle,(short) yaw,(short) roll,(short) pitch};
-			command[5]=(byte)(temp[0] & 0xFF);
-			command[6]=(byte)(temp[0]>>8 & 0xFF);
-			command[7]=(byte)(temp[1] & 0xFF);
-			command[8]=(byte)(temp[1]>>8 & 0xFF);
-			command[9]=(byte)(temp[2] & 0xFF);
-			command[10]=(byte)(temp[2]>>8 & 0xFF);
-			command[11]=(byte)(temp[3] & 0xFF);
-			command[12]=(byte)(temp[3]>>8 & 0xFF);
-			
-			calculateChecksum();
-			
+	public void setBody(int throttle,int yaw,int roll,int pitch ){			
+		    setBody((short)throttle, (short)yaw, (short)roll, (short)pitch);    			
 	}
 
 	public void calculateChecksum(){
@@ -191,7 +181,35 @@ public class ControlPacket {
 	public byte[] getCommand() {
 		return command;
 	}
+
+	private short byteToShort(byte[] source,int offset) {
+		ByteBuffer buffer = ByteBuffer.wrap(command, offset,2 );
+		buffer.order(ByteOrder.BIG_ENDIAN);
+		short target = buffer.getShort();
+		return target;
+	}
 	
+	public int getThrottle() {
+		return byteToShort(command, 4);
+
+	}
+
+	public int getYaw() {
+		return byteToShort(command, 6);
+
+	}
+
+	public int getRoll() {
+
+		return byteToShort(command, 8);
+
+	}
+
+	public int getPitch() {
+
+		return byteToShort(command, 10);
+
+	}
 	
 	
 }
