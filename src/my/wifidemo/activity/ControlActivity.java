@@ -24,6 +24,7 @@ import my.wifidemo.R;
 import my.wifidemo.R.id;
 import my.wifidemo.observer.ScreenObserver;
 import my.wifidemo.observer.ScreenObserver.ScreenStateListener;
+import my.wifidemo.views.VerticalSeekBar;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -58,6 +59,8 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -92,6 +95,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private TextView powerTextView = null;
 	private TextView directionTextView = null;
 	private JoystickView joystickLeft = null;
+	private VerticalSeekBar throttleSeekBar=null;
 	
 	private Dialog dialog = null;
 	private ScreenObserver screenObserver=null;
@@ -239,6 +243,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		powerTextView = (TextView) findViewById(R.id.textViewPower);
 		directionTextView = (TextView) findViewById(R.id.textViewDirection);
 		joystickLeft = (JoystickView) findViewById(R.id.joystickLeft);
+		throttleSeekBar=(VerticalSeekBar)findViewById(R.id.SeekBarHeight);
 
 		btnLED1On.setOnClickListener(this);
 
@@ -299,6 +304,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 				
 		//开启心跳线程，确认飞机和遥控端的连接状态
 		
+		throttleSeekBar.setOnSeekBarChangeListener(seekBarChangeListener);
+		//设置油门条的监听事件
 
 	}
 
@@ -463,6 +470,29 @@ public class ControlActivity extends Activity implements OnClickListener {
 			default:
 				directionTextView.setText("C");
 			}
+		}
+	};
+	
+	
+	/**
+	 * 油门条的监听事件
+	 * */
+	
+     OnSeekBarChangeListener seekBarChangeListener=new OnSeekBarChangeListener() {
+		
+		public void onStopTrackingTouch(SeekBar arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		public void onStartTrackingTouch(SeekBar arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		public void onProgressChanged(SeekBar arg0, int progress, boolean fromUser) {
+			// TODO Auto-generated method stub
+			Log.i(TAG, ""+progress);
 		}
 	};
 	
@@ -887,7 +917,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 						String dataString = new String(datagramPacket.getData(),
 								datagramPacket.getOffset(),
 								datagramPacket.getLength());
-						Log.i(TAG, "[UDPreceive]"+dataString);
+						Log.d(TAG, "[UDPreceive]"+dataString);
 					}catch(SocketTimeoutException e){
 						//Log.i(TAG, "[UDPSOCKET]timeout");
 					}
