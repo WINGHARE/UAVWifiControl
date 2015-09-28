@@ -113,7 +113,7 @@ public class AierialControlManager {
 				
 				synchronized (datagramSocket) {
 					
-					datagramSocket.close();;
+					datagramSocket.disconnect();
 				}
 			}
 			
@@ -170,6 +170,7 @@ public class AierialControlManager {
 					dp = new DatagramPacket(command, command.length,
 							serverAddr, port);
 					ds.send(dp);
+					Log.d(TAG, "heartbeat");
 					sleep(125);
 				}
 			} catch (SocketException e) {
@@ -265,14 +266,14 @@ public class AierialControlManager {
 						// TODO: handle exception
 					} finally {
 						// multicastLock.release();
-						//datagramSocket.disconnect();
+						datagramSocket.disconnect();
 					}
 				}
 
 				synchronized (datagramSocket) {
 
 					if (datagramSocket != null)
-						datagramSocket.close();
+						datagramSocket.disconnect();
 				}
 			} catch (SocketException e) {
 				// TODO Auto-generated catch block
@@ -280,7 +281,7 @@ public class AierialControlManager {
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
-				if(datagramSocket!=null)datagramSocket.close();
+				if(datagramSocket!=null)datagramSocket.disconnect();
 			}
 			super.run();
 		}

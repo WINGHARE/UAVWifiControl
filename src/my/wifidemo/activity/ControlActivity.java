@@ -42,6 +42,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
@@ -81,6 +82,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 	private Dialog dialog = null;
 	private ScreenObserver screenObserver = null;
+	
+	private static int backFlag=0;
 
 	// private Socket socket = null;
 
@@ -138,7 +141,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 	@Override
 	public void onBackPressed() {
 
-		aManager.disconnect();
 		// aManager.closeSocket();
 		backToPage();
 	}
@@ -176,6 +178,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		// TODO Auto-generated method stub
 		aManager.disconnect();
 		super.onDestroy();
+		System.exit(0);
 	}
 
 	/** Called when the activity is first created. */
@@ -619,18 +622,26 @@ public class ControlActivity extends Activity implements OnClickListener {
 		 * CloseCameraThread cameraThread = new CloseCameraThread(
 		 * "CLOSE_CAMERATHREAD"); cameraThread.start();
 		 */
-		iManager.closeCamera();
-		try {
-			Thread.sleep(250);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		backFlag++;
+		if(backFlag%2==1){
+			Toast.makeText(getApplicationContext(), "再点一次返回退出程序",
+					Toast.LENGTH_SHORT).show();	
 		}
-		aManager.disconnect();
-		Intent intent = new Intent();
-		intent.setClass(this, MainActivity.class);
-		startActivity(intent);
-		finish();
+		else{
+			backFlag=0;
+			iManager.closeCamera();
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			aManager.disconnect();
+			Intent intent = new Intent();
+			intent.setClass(this, MainActivity.class);
+			startActivity(intent);
+			finish();	
+		}
 		
 	}
 
