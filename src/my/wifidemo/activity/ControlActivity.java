@@ -68,19 +68,19 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private Button btnOpenCamera = null;
 	private Button btnCloseCamera = null;
 	private Button btnCaptureScreen = null;
-	private Button btnBack=null;
+	private Button btnBack = null;
 	private ImageView imageViewVideo = null;
-	private ImageView imageViewMask=null;
+	private ImageView imageViewMask = null;
 	private TextView ipTextView = null;
 	private TextView angleTextView = null;
 	private TextView powerTextView = null;
 	private TextView directionTextView = null;
-	private TextView throttleTextView =null;
+	private TextView throttleTextView = null;
 	private JoystickView joystickLeft = null;
-	private VerticalSeekBar throttleSeekBar=null;
-	
+	private VerticalSeekBar throttleSeekBar = null;
+
 	private Dialog dialog = null;
-	private ScreenObserver screenObserver=null;
+	private ScreenObserver screenObserver = null;
 
 	// private Socket socket = null;
 
@@ -88,7 +88,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	public static final int REFRESH_VIEW = 0;
 	public static final int DISPLY_DIALOG = 1;
 	public static final int DISMISS_DIALOG = 2;
-	public static final int RESET_BUTTON_STATUS=3;
+	public static final int RESET_BUTTON_STATUS = 3;
 
 	// private Button btnLED4On = null;
 	// private Button btnLED4Off = null;
@@ -98,30 +98,37 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 	private static String ipstr = "";
 	private static int UDP_SERVER_PORT = 10086;
-	private static int UDP_SERVER_PORT_LOCAL=12306;
-	
-/*	private ImageReceiveThread imageReceiveThread = null;
-*/	
+	private static int UDP_SERVER_PORT_LOCAL = 12306;
+
+	/*
+	 * private ImageReceiveThread imageReceiveThread = null;
+	 */
 	private ImageReceiveManager iManager;
 	private AierialControlManager aManager;
-	
-/*	private HeartBeatThread heartBeatThread;
-*/	private ChangeCtrlMsgThread changeCtrlMsgThread;
-/*	private ControlInfoReceiveThread controlInfoReceiveThread;
-*/	
-	
-	public static String controlMsg="0";
-	public static ControlPacket mControlPacket=new ControlPacket();
-	
-	
+
+	/*
+	 * private HeartBeatThread heartBeatThread;
+	 */private ChangeCtrlMsgThread changeCtrlMsgThread;
+	/*
+	 * private ControlInfoReceiveThread controlInfoReceiveThread;
+	 */
+
+	public static String controlMsg = "0";
+	public static ControlPacket mControlPacket = new ControlPacket();
+
 	/**
 	 * 方便其他页面可以启动该页面
-	 * @param context Context当前上下文
-	 * @param ip String 用于连接服务器的IP地址
-	 * @param port String 用于连接应用的端口号
+	 * 
+	 * @param context
+	 *            Context当前上下文
+	 * @param ip
+	 *            String 用于连接服务器的IP地址
+	 * @param port
+	 *            String 用于连接应用的端口号
 	 * */
-	public static void startControlActivity(Context context,String ip,String port){
-		Intent intent=new Intent(context,ControlActivity.class);
+	public static void startControlActivity(Context context, String ip,
+			String port) {
+		Intent intent = new Intent(context, ControlActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.putExtra("IP", ip);
 		intent.putExtra("PORT", port);
@@ -130,14 +137,12 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 	@Override
 	public void onBackPressed() {
-		
+
 		aManager.disconnect();
-		aManager.closeSocket();
+		// aManager.closeSocket();
 		backToPage();
 	}
-	
-	
-	
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
@@ -149,16 +154,21 @@ public class ControlActivity extends Activity implements OnClickListener {
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-	/*	heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
-		heartBeatThread.start();*/
-		
-		aManager.connect();
+		/*
+		 * heartBeatThread=new
+		 * HeartBeatThread("HEART_BEAT",datagramSocket,this);
+		 * heartBeatThread.start();
+		 */
+
+		// aManager.connect();
 		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
 		changeCtrlMsgThread.start();
-		
-		/*controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
-		controlInfoReceiveThread.start();
-		*/
+
+		/*
+		 * controlInfoReceiveThread=new
+		 * ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
+		 * controlInfoReceiveThread.start();
+		 */
 	}
 
 	@Override
@@ -180,8 +190,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 				| View.SYSTEM_UI_FLAG_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-				| View.KEEP_SCREEN_ON;
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.KEEP_SCREEN_ON;
 		// This work only for android 4.4+
 		if (version >= Build.VERSION_CODES.KITKAT) {
 
@@ -204,7 +213,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		}
 
 		setContentView(R.layout.activity_control);
-		
+
 		btnLED1On = (Button) findViewById(R.id.ButtonLED1On);
 		btnLED1Off = (Button) findViewById(R.id.ButtonLED1Off);
 		btnLED2On = (Button) findViewById(R.id.ButtonLED2On);
@@ -215,16 +224,16 @@ public class ControlActivity extends Activity implements OnClickListener {
 		btnOpenCamera = (Button) findViewById(R.id.ButtonOpenCamera);
 		btnCloseCamera = (Button) findViewById(R.id.ButtonCloseCamera);
 		btnCaptureScreen = (Button) findViewById(R.id.buttonCapturePic);
-		btnBack=(Button)findViewById(R.id.buttonBack);
+		btnBack = (Button) findViewById(R.id.buttonBack);
 		imageViewVideo = (ImageView) findViewById(R.id.VideoImage);
-		imageViewMask=(ImageView)findViewById(R.id.imageViewbg);
+		imageViewMask = (ImageView) findViewById(R.id.imageViewbg);
 		ipTextView = (TextView) findViewById(R.id.textViewip);
 		angleTextView = (TextView) findViewById(R.id.textViewAngle);
 		powerTextView = (TextView) findViewById(R.id.textViewPower);
 		directionTextView = (TextView) findViewById(R.id.textViewDirection);
-		throttleTextView=(TextView)findViewById(R.id.textViewFlightHeight);
+		throttleTextView = (TextView) findViewById(R.id.textViewFlightHeight);
 		joystickLeft = (JoystickView) findViewById(R.id.joystickLeft);
-		throttleSeekBar=(VerticalSeekBar)findViewById(R.id.SeekBarHeight);
+		throttleSeekBar = (VerticalSeekBar) findViewById(R.id.SeekBarHeight);
 
 		btnLED1On.setOnClickListener(this);
 
@@ -245,40 +254,32 @@ public class ControlActivity extends Activity implements OnClickListener {
 		btnCloseCamera.setOnClickListener(this);
 
 		btnCaptureScreen.setOnClickListener(this);
-		
+
 		btnBack.setOnClickListener(this);
 
-		joystickLeft.setOnJoystickMoveListener(joystickLeftListener, JoystickView.DEFAULT_LOOP_INTERVAL);
-		
-		screenObserver= new ScreenObserver(getApplicationContext());
+		joystickLeft.setOnJoystickMoveListener(joystickLeftListener,
+				JoystickView.DEFAULT_LOOP_INTERVAL);
+
+		screenObserver = new ScreenObserver(getApplicationContext());
 		screenObserver.requestScreenStateUpdate(screenStateListener);
-		//监听屏幕的锁屏状态
-		
+		// 监听屏幕的锁屏状态
+
 		Bundle bundle = getIntent().getExtras();
 		ipstr = bundle.getString("IP");
 		UDP_SERVER_PORT = Integer.parseInt(bundle.getString("PORT").trim());
-		//获得IP地址和端口号
-		
+		// 获得IP地址和端口号
+
 		ipTextView.setText(ipstr);
-		
 
 		iManager = new ImageReceiveManager(UDP_SERVER_PORT,
 				UDP_SERVER_PORT_LOCAL, ipstr, this, myHandler);
 		aManager = new AierialControlManager(UDP_SERVER_PORT,
 				UDP_SERVER_PORT_LOCAL, ipstr, this, myHandler);
-	/*	heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
-		heartBeatThread.start();
-		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
-		controlInfoReceiveThread.start();
-		*/
-		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
-		changeCtrlMsgThread.start();
-		
-				
-		//开启心跳线程，确认飞机和遥控端的连接状态
-		
+		aManager.connectSocket();
+		aManager.connect();
+
 		throttleSeekBar.setOnSeekBarChangeListener(seekBarChangeListener);
-		//设置油门条的监听事件
+		// 设置油门条的监听事件
 
 	}
 
@@ -289,15 +290,14 @@ public class ControlActivity extends Activity implements OnClickListener {
 			aManager.sendUDPCommand("LED_OPEN1");
 			break;
 		case R.id.ButtonLED1Off:
-			aManager.sendUDPCommand(new byte[]{(byte)0xaa,(byte)0xaf,(byte)0x01,(byte)0x00,
-					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
-					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,}
-					);
+			aManager.sendUDPCommand(new byte[] { (byte) 0xaa, (byte) 0xaf,
+					(byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+					(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+					(byte) 0x00, (byte) 0x00, });
 			break;
 		case R.id.ButtonLED2On:
 			aManager.sendUDPCommand("LED_OPEN2");
-			
-			
+
 			imageViewVideo.setDrawingCacheEnabled(true);
 			Bitmap detectBitmap = Bitmap.createBitmap(imageViewVideo
 					.getDrawingCache());
@@ -319,19 +319,13 @@ public class ControlActivity extends Activity implements OnClickListener {
 			btnStartReceive.setVisibility(View.VISIBLE);
 			btnOpenCamera.setVisibility(View.GONE);
 
-			
-			/*OpenCameraThread OpenCameraThread = new OpenCameraThread(
-					"OPENCAMRERA_THREAD");
-			OpenCameraThread.start();*/
-			
 			iManager.openCamera();
 			Log.i(TAG, "[btnOpenCamera]Thread create");
 			break;
 		}
 		case R.id.ButtonStartRecevie: {
 			btnStartReceive.setVisibility(View.GONE);
-			/*imageReceiveThread = new ImageReceiveThread("IMAGERECEIVE_THREAD");
-			imageReceiveThread.start();*/
+
 			iManager.startReceive();
 			break;
 		}
@@ -339,14 +333,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 			btnCloseCamera.setVisibility(View.GONE);
 			btnOpenCamera.setVisibility(View.VISIBLE);
 			btnStartReceive.setVisibility(View.GONE);
-			/*CloseCameraThread thread = new CloseCameraThread(
-					"CLOSECAMERA_THREAD");
-			thread.start();*/
 			iManager.closeCamera();
 			break;
 		}
-		
-		case R.id.buttonBack:{
+
+		case R.id.buttonBack: {
 			backToPage();
 			break;
 		}
@@ -354,32 +345,33 @@ public class ControlActivity extends Activity implements OnClickListener {
 		case R.id.buttonCapturePic: {
 			try {
 				String path = getSDPath();
-				File dir=new File(path+"/Capture/");
-				
-				if(!dir.exists()){
-					dir.mkdir();					
-				}		    
+				File dir = new File(path + "/Capture/");
+
+				if (!dir.exists()) {
+					dir.mkdir();
+				}
 				imageViewVideo.setDrawingCacheEnabled(true);
 				Bitmap caputreBitmap = Bitmap.createBitmap(imageViewVideo
 						.getDrawingCache());
-				
+
 				SimpleDateFormat formatter = new SimpleDateFormat(
 						"yyyyMMdd_HHmmss");
 				Date curDate = new Date(System.currentTimeMillis());// 获取当前时间
 				String fileName = formatter.format(curDate);
-				
-				File file = new File(path + "/Capture/", fileName+".jpg");
-				boolean isFileCreated=file.createNewFile();
-				
-				if(isFileCreated){
+
+				File file = new File(path + "/Capture/", fileName + ".jpg");
+				boolean isFileCreated = file.createNewFile();
+
+				if (isFileCreated) {
 					FileOutputStream out = new FileOutputStream(file);
 					caputreBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
 					out.flush();
-					out.close();					
-					Log.i(TAG, "已经保存图片");	
+					out.close();
+					Log.i(TAG, "已经保存图片");
 				}
-				
-				Animation animation=AnimationUtils.loadAnimation(this, R.anim.abc_fade_out);
+
+				Animation animation = AnimationUtils.loadAnimation(this,
+						R.anim.abc_fade_out);
 				imageViewVideo.startAnimation(animation);
 				imageViewVideo.setDrawingCacheEnabled(false);
 
@@ -389,7 +381,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}catch (Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
 				Log.e(TAG, e.toString());
 			}
@@ -399,20 +391,20 @@ public class ControlActivity extends Activity implements OnClickListener {
 			break;
 		}
 	}
-	
+
 	/**
 	 * 设置左摇杆的移动事件
 	 * */
-	
-	OnJoystickMoveListener joystickLeftListener= new OnJoystickMoveListener(){
+
+	OnJoystickMoveListener joystickLeftListener = new OnJoystickMoveListener() {
 
 		public void onValueChanged(int angle, int power, int direction) {
 			// TODO Auto-generated method stub
 			angleTextView.setText(" " + String.valueOf(angle) + "°");
 			powerTextView.setText(" " + String.valueOf(power) + "%");
-			//changeCtrlMsgThread.getHandler().sendEmptyMessage(1);
+			// changeCtrlMsgThread.getHandler().sendEmptyMessage(1);
 			synchronized (controlMsg) {
-				controlMsg="1";
+				controlMsg = "1";
 			}
 			switch (direction) {
 			case JoystickView.FRONT:
@@ -444,65 +436,62 @@ public class ControlActivity extends Activity implements OnClickListener {
 			}
 		}
 	};
-	
-	
+
 	/**
 	 * 油门条的监听事件
 	 * */
-	
-     OnSeekBarChangeListener seekBarChangeListener=new OnSeekBarChangeListener() {
-		
+
+	OnSeekBarChangeListener seekBarChangeListener = new OnSeekBarChangeListener() {
+
 		public void onStopTrackingTouch(SeekBar arg0) {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
+
 		public void onStartTrackingTouch(SeekBar arg0) {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
-		public void onProgressChanged(SeekBar arg0, int progress, boolean fromUser) {
+
+		public void onProgressChanged(SeekBar arg0, int progress,
+				boolean fromUser) {
 			// TODO Auto-generated method stub
-			ControlPacket controlPacket=new ControlPacket();
+			ControlPacket controlPacket = new ControlPacket();
 			controlPacket.setHeader(ControlPacket.HEADER_OUT);
 			controlPacket.setType(ControlPacket.TYPE_CONTROL);
-			
-			int throttle=(progress*5==500)?(499):(progress*5);
-			controlPacket.setBody(throttle,0,0,0);
-			
-			
-			throttleTextView.setText(""+controlPacket.getThrottle());
-			Log.d(TAG,""+controlPacket.getThrottle());
-			
-			
+
+			int throttle = (progress * 5 == 500) ? (499) : (progress * 5);
+			controlPacket.setBody(throttle, 0, 0, 0);
+
+			throttleTextView.setText("" + controlPacket.getThrottle());
+			Log.d(TAG, "" + controlPacket.getThrottle());
+
 			controlPacket.calculateChecksum();
-			
-			
+
 			synchronized (aManager) {
 				aManager.setControlMsg(controlPacket);
-				
+
 			}
 			aManager.sendUDPCommand(controlPacket.getCommand());
-		//	Log.i(TAG, ""+progress);
+			// Log.i(TAG, ""+progress);
 		}
 	};
-	
+
 	/**
 	 * 监听屏幕的锁屏状态并且执行操作
 	 * */
-	ScreenStateListener screenStateListener=new ScreenStateListener() {
-		
+	ScreenStateListener screenStateListener = new ScreenStateListener() {
+
 		public void onScreenOn() {
-			// TODO Auto-generated method stub		
-			
+			// TODO Auto-generated method stub
+
 		}
-		
+
 		public void onScreenOff() {
 			// TODO Auto-generated method stub
-			iManager.closeCamera();	
+			iManager.closeCamera();
 			aManager.disconnect();
-			
+
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -513,15 +502,14 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 		}
 	};
-	
 
 	/**
 	 * 修改飞机控制信号的线程
 	 * */
-	class ChangeCtrlMsgThread extends HandlerThread{
+	class ChangeCtrlMsgThread extends HandlerThread {
 
-		
 		private Handler handler;
+
 		public Handler getHandler() {
 			return handler;
 		}
@@ -535,27 +523,27 @@ public class ControlActivity extends Activity implements OnClickListener {
 		public void run() {
 			// TODO Auto-generated method stub
 			Looper.prepare();
-			handler = new Handler(){
+			handler = new Handler() {
 
 				@Override
 				public void handleMessage(Message msg) {
 					// TODO Auto-generated method stub
 					super.handleMessage(msg);
 					synchronized (controlMsg) {
-						controlMsg="1";
+						controlMsg = "1";
 					}
 				}
-				
+
 			};
 			Looper.loop();
 			super.run();
 		}
-		
+
 	}
 
-	
 	/**
-	 * 主线程的handler*/
+	 * 主线程的handler
+	 */
 	class MyHandler extends Handler {
 		public MyHandler() {
 
@@ -572,17 +560,17 @@ public class ControlActivity extends Activity implements OnClickListener {
 				int bodyLength = msg.arg1;
 				BitmapFactory.Options options = new BitmapFactory.Options();
 				options.inSampleSize = 1;
-				options.inMutable=true;
-				options.inPreferredConfig=Bitmap.Config.RGB_565;
+				options.inMutable = true;
+				options.inPreferredConfig = Bitmap.Config.RGB_565;
 				Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0,
 						bodyLength, options);
 				imageViewVideo.setImageBitmap(bitmap);
-				
+
 				// 将从线程中获取的数据展示在UI的imageview当中。
 			} else if (msg.what == DISPLY_DIALOG) {
 				String messageString = (String) msg.obj;
-				dialog = new AlertDialog.Builder(ControlActivity.this).setMessage(
-						messageString).create();
+				dialog = new AlertDialog.Builder(ControlActivity.this)
+						.setMessage(messageString).create();
 				dialog.show();
 				// 在Dialog中显示消息
 			} else if (msg.what == DISMISS_DIALOG) {
@@ -590,14 +578,15 @@ public class ControlActivity extends Activity implements OnClickListener {
 					dialog.dismiss();
 				}
 				// 将DialogDismiss
-			}else if (msg.what==RESET_BUTTON_STATUS){
+			} else if (msg.what == RESET_BUTTON_STATUS) {
 				btnCloseCamera.setVisibility(View.GONE);
 				btnOpenCamera.setVisibility(View.VISIBLE);
-				btnStartReceive.setVisibility(View.GONE);	
-				//重置按钮状态
+				btnStartReceive.setVisibility(View.GONE);
+				// 重置按钮状态
 			}
 		}
 	}
+
 	/**
 	 * 重置按钮布局
 	 */
@@ -606,111 +595,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 		message.what = RESET_BUTTON_STATUS;
 		myHandler.sendMessage(message);
 	}
-
-
-	
-
-	/**
-	 * 使用UDP向开发板发送信号
-	 * 
-	 * @param command
-	 *            String 需要发送的信号
-	 * */
-	private void sendUDPCommand(final String command,final DatagramSocket datagramSocket) {
-
-		new Thread() {
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				String udpMsg = command;
-				DatagramSocket ds = datagramSocket;
-				try {
-					if (ds == null) {
-						ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
-					}
-					InetAddress serverAddr = InetAddress.getByName(ipstr);
-					DatagramPacket dp;
-					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
-							serverAddr, UDP_SERVER_PORT);
-					ds.send(dp);
-				} catch (SocketException e) {
-					e.printStackTrace();
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					if (ds != null) {
-					//	ds.close();
-					}
-				}
-				super.run();
-			}
-
-		}.start();
-		;
-	}
-	
-	/**
-	 * 使用UDP向开发板发送信号
-	 * 
-	 * @param data
-	 *            byte[] 需要发送的字节码
-	 * */
-	private void sendUDPCommand(final byte[] data,final DatagramSocket datagramSocket) {
-
-		new Thread() {
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-			//	String udpMsg = command;
-				DatagramSocket ds = datagramSocket;
-				try {
-					if(ds==null){
-						
-						ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
-					}
-					InetAddress serverAddr = InetAddress.getByName(ipstr);
-					DatagramPacket dp;
-					dp = new DatagramPacket(data, data.length,
-							serverAddr, UDP_SERVER_PORT);
-					ds.send(dp);
-				} catch (SocketException e) {
-					e.printStackTrace();
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					if (ds != null) {
-					//	ds.close();
-					}
-				}
-				super.run();
-			}
-
-		}.start();
-		;
-	}
-
-/*	*//**
-	 * 改变线程的标记位关闭相应的线程
-	 * *//*
-	private void closeControlThreads(){
-		synchronized (imageRecenable) {
-			imageRecenable = false;
-		}
-		synchronized (HeartBeatThreadEnable) {
-			HeartBeatThreadEnable=false;
-		}
-		synchronized (ctrlInfoThreadEnable) {
-			ctrlInfoThreadEnable=false;
-		}
-	}*/
 
 	/** 获取SD卡路径 */
 	public String getSDPath() {
@@ -723,16 +607,17 @@ public class ControlActivity extends Activity implements OnClickListener {
 		return sdDir.toString();
 
 	}
-	
+
 	/**
 	 * 
 	 * 返回主页
-	 *  
+	 * 
 	 * */
-	private void backToPage(){
-		/*CloseCameraThread cameraThread = new CloseCameraThread(
-				"CLOSE_CAMERATHREAD");
-		cameraThread.start();*/
+	private void backToPage() {
+		/*
+		 * CloseCameraThread cameraThread = new CloseCameraThread(
+		 * "CLOSE_CAMERATHREAD"); cameraThread.start();
+		 */
 		iManager.closeCamera();
 		try {
 			Thread.sleep(250);
@@ -740,12 +625,12 @@ public class ControlActivity extends Activity implements OnClickListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		aManager.disconnect();
 		Intent intent = new Intent();
 		intent.setClass(this, MainActivity.class);
 		startActivity(intent);
 		finish();
 	}
-	
 
 	@SuppressLint("NewApi")
 	@Override

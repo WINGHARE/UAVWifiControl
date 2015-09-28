@@ -15,32 +15,27 @@ import android.os.HandlerThread;
 import android.util.Log;
 
 public class AierialControlManager {
-	
+
 	public static final String TAG = "AIERIAL_CONTROL_MANAGER";
-	
+
 	private int port;
 	private int portLocal;
 	private String ipstr;
 	private Context mContext;
 	private Handler myHandler;
-	private static Boolean HeartBeatThreadEnable=true;
-	private static Boolean ctrlInfoThreadEnable=true;
-	private static ControlPacket mControlPacket=new ControlPacket();	
-	private static DatagramSocket datagramSocket;
+	private static Boolean HeartBeatThreadEnable = true;
+	private static Boolean ctrlInfoThreadEnable = true;
+	private static ControlPacket mControlPacket = new ControlPacket();
+	private DatagramSocket datagramSocket;
 
-	
 	public static final int REFRESH_VIEW = 0;
 	public static final int DISPLY_DIALOG = 1;
 	public static final int DISMISS_DIALOG = 2;
-	public static final int RESET_BUTTON_STATUS=3;
-	
-	
+	public static final int RESET_BUTTON_STATUS = 3;
+
 	private HeartBeatThread heartBeatThread;
 	private ControlInfoReceiveThread controlInfoReceiveThread;
-	
-	
-	
-	
+
 	public AierialControlManager(int port, int portLocal, String ipstr,
 			Context mContext, Handler myHandler) {
 		super();
@@ -51,10 +46,7 @@ public class AierialControlManager {
 		this.myHandler = myHandler;
 	}
 
-	
-	
-	public boolean connectSocket(){
-		
+	public boolean connectSocket() {
 		if (datagramSocket == null) {
 			try {
 				datagramSocket = new DatagramSocket(portLocal);
@@ -63,46 +55,51 @@ public class AierialControlManager {
 				Log.e(TAG, "[UDPSOCKET]创建socket失败");
 				return false;
 			}
-		}else if(!datagramSocket.isConnected()){
-			
+		} else if (!datagramSocket.isConnected() || datagramSocket.isClosed()) {
+
 			InetAddress address;
 			try {
 				address = InetAddress.getByName(ipstr);
 				datagramSocket.connect(address, port);
+				return true;
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
-		}	
-		return true;
+				return false;
+			}
+		}
+		return false;
 	}
-	
-	public void closeSocket(){
+
+	public void closeSocket() {
 		datagramSocket.close();
 	}
-	
-	public void connect(){
-		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,mContext);
+
+	public void connect() {
+		heartBeatThread = new HeartBeatThread("HEART_BEAT", datagramSocket,
+				mContext);
 		heartBeatThread.start();
-		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
+		controlInfoReceiveThread = new ControlInfoReceiveThread("CTRL_INFO",
+				datagramSocket);
 		controlInfoReceiveThread.start();
 	}
-	
-	public void disconnect(){
+
+	public void disconnect() {
 		synchronized (HeartBeatThreadEnable) {
-			HeartBeatThreadEnable=false;
+			HeartBeatThreadEnable = false;
 		}
 		synchronized (ctrlInfoThreadEnable) {
-			ctrlInfoThreadEnable=false;
+			ctrlInfoThreadEnable = false;
 		}
+		// datagramSocket.close();
 	}
-	
-	public boolean socketIsConnected(){
+
+	public boolean socketIsConnected() {
 		return datagramSocket.isConnected();
 	}
 
-	public void setControlMsg(ControlPacket controlPacket){
-		mControlPacket=controlPacket;
+	public void setControlMsg(ControlPacket controlPacket) {
+		mControlPacket = controlPacket;
 	}
 
 	/**
@@ -134,6 +131,9 @@ public class AierialControlManager {
 				if (ds == null) {
 
 					ds = new DatagramSocket(portLocal);
+				} else if (ds.isClosed()) {
+					InetAddress serverAddr = InetAddress.getByName(ipstr);
+					ds.connect(serverAddr, port);
 				}
 
 				InetAddress serverAddr = InetAddress.getByName(ipstr);
@@ -144,19 +144,6 @@ public class AierialControlManager {
 					dp = new DatagramPacket(command, command.length,
 							serverAddr, port);
 					ds.send(dp);
-					/*
-					 * Log.i(TAG,udpMsg); Log.i(TAG,ctrString);
-					 */
-
-					/*
-					 * synchronized (mControlPacket) {
-					 * 
-					 * if (mControlPacket==null) { mControlPacket=new
-					 * ControlPacket(); }
-					 * mControlPacket.setHeader(ControlPacket.HEADER_OUT);
-					 * mControlPacket.setType(ControlPacket.TYPE_CONTROL);
-					 * mControlPacket.setBody(0, 0, 0, 0); }
-					 */
 					sleep(125);
 				}
 			} catch (SocketException e) {
@@ -169,7 +156,7 @@ public class AierialControlManager {
 				e.printStackTrace();
 			} finally {
 				if (ds != null) {
-					// ds.close();
+					ds.disconnect();
 				}
 			}
 			// Looper.loop();
@@ -178,11 +165,10 @@ public class AierialControlManager {
 
 	}
 
-
 	/**
 	 * 接收来自飞机的飞行信息的线程
 	 * */
-	
+
 	class ControlInfoReceiveThread extends HandlerThread {
 
 		DatagramSocket datagramSocket = null;
@@ -206,6 +192,9 @@ public class AierialControlManager {
 
 					datagramSocket = new DatagramSocket(portLocal);
 
+				} else if (datagramSocket.isClosed()) {
+					InetAddress serverAddr = InetAddress.getByName(ipstr);
+					datagramSocket.connect(serverAddr, port);
 				}
 				byte[] controlDataByte = new byte[13];
 				datagramSocket.setSoTimeout(200);
@@ -250,8 +239,11 @@ public class AierialControlManager {
 					}
 				}
 
-				if (datagramSocket != null)
-					datagramSocket.close();
+				synchronized (datagramSocket) {
+
+					if (datagramSocket != null)
+						datagramSocket.disconnect();
+				}
 			} catch (SocketException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -282,7 +274,7 @@ public class AierialControlManager {
 				try {
 					if (ds == null) {
 						ds = new DatagramSocket(portLocal);
-					}else if(!ds.isConnected()){
+					} else if (!ds.isConnected()) {
 						connectSocket();
 					}
 					InetAddress serverAddr = InetAddress.getByName(ipstr);
@@ -300,7 +292,7 @@ public class AierialControlManager {
 					e.printStackTrace();
 				} finally {
 					if (ds != null) {
-					//	ds.close();
+						// ds.close();
 					}
 				}
 				super.run();
@@ -309,7 +301,7 @@ public class AierialControlManager {
 		}.start();
 		;
 	}
-	
+
 	/**
 	 * 使用UDP向开发板发送信号
 	 * 
@@ -322,20 +314,19 @@ public class AierialControlManager {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-			//	String udpMsg = command;
+				// String udpMsg = command;
 				DatagramSocket ds = datagramSocket;
 				try {
-					if(ds==null){
-						
+					if (ds == null) {
+
 						ds = new DatagramSocket(portLocal);
-					}else if(!ds.isConnected()){
+					} else if (!ds.isConnected()) {
 						connectSocket();
 					}
-					
+
 					InetAddress serverAddr = InetAddress.getByName(ipstr);
 					DatagramPacket dp;
-					dp = new DatagramPacket(data, data.length,
-							serverAddr, port);
+					dp = new DatagramPacket(data, data.length, serverAddr, port);
 					ds.send(dp);
 				} catch (SocketException e) {
 					e.printStackTrace();
@@ -347,7 +338,7 @@ public class AierialControlManager {
 					e.printStackTrace();
 				} finally {
 					if (ds != null) {
-					//	ds.close();
+						// ds.close();
 					}
 				}
 				super.run();

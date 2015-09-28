@@ -22,7 +22,6 @@ import android.util.Log;
 
 public class ImageReceiveManager {
 
-	
 	public static final String TAG = "IMAGE_RECEIVE_MANAGER";
 
 	private int port;
@@ -30,29 +29,27 @@ public class ImageReceiveManager {
 	private String ipstr;
 	private Context mContext;
 	private Handler myHandler;
-	private static Boolean imageRecenable=true;
+	private static Boolean imageRecenable = true;
 	private static Boolean cameraOpenFlagBoolean = false;
-	
-	
+
 	public static final int REFRESH_VIEW = 0;
 	public static final int DISPLY_DIALOG = 1;
 	public static final int DISMISS_DIALOG = 2;
-	public static final int RESET_BUTTON_STATUS=3;
+	public static final int RESET_BUTTON_STATUS = 3;
 
 	private ImageReceiveThread imageReceiveThread;
 	private OpenCameraThread openCameraThread;
-	
-	public ImageReceiveManager(int port,int portlocal, String ipstr, Context mContext,Handler handler) {
+
+	public ImageReceiveManager(int port, int portlocal, String ipstr,
+			Context mContext, Handler handler) {
 		super();
 		this.port = port;
 		this.ipstr = ipstr;
-		this.portLocal=portlocal;
+		this.portLocal = portlocal;
 		this.mContext = mContext;
-		this.myHandler =handler;
+		this.myHandler = handler;
 	}
 
-
-	
 	/**
 	 * 在子线程中将消息发送给UI线程显示Diaglog
 	 * 
@@ -74,7 +71,7 @@ public class ImageReceiveManager {
 		message.what = DISMISS_DIALOG;
 		myHandler.sendMessage(message);
 	}
-	
+
 	/**
 	 * 重置按钮布局
 	 */
@@ -83,8 +80,7 @@ public class ImageReceiveManager {
 		message.what = RESET_BUTTON_STATUS;
 		myHandler.sendMessage(message);
 	}
-	
-	
+
 	/**
 	 * 在输入流中获取下一张图片的图片长度
 	 * 
@@ -117,36 +113,33 @@ public class ImageReceiveManager {
 
 	}
 
-	
-	public void startReceive(){
-		imageRecenable=true;
+	public void startReceive() {
+		imageRecenable = true;
 		imageReceiveThread = new ImageReceiveThread("IMAGERECEIVE_THREAD");
 		imageReceiveThread.start();
 	}
-	
-	public void openCamera(){
-		cameraOpenFlagBoolean=true;
-		openCameraThread = new OpenCameraThread(
-				"OPENCAMRERA_THREAD");
+
+	public void openCamera() {
+		cameraOpenFlagBoolean = true;
+		openCameraThread = new OpenCameraThread("OPENCAMRERA_THREAD");
 		openCameraThread.start();
 	}
-	
-	public void closeCamera(){
+
+	public void closeCamera() {
 		synchronized (cameraOpenFlagBoolean) {
-			cameraOpenFlagBoolean=false;
+			cameraOpenFlagBoolean = false;
 		}
 	}
-	
-	public void disableImageRec(){
+
+	public void disableImageRec() {
 		synchronized (imageRecenable) {
-			imageRecenable=false;		
+			imageRecenable = false;
 		}
 	}
 
 	/**
 	 * 接收图像的线程
 	 * */
-	
 
 	class ImageReceiveThread extends HandlerThread {
 
@@ -165,9 +158,7 @@ public class ImageReceiveManager {
 			try {
 				if (socket == null) {
 					socket = new Socket();
-					socket.connect(
-							new InetSocketAddress(ipstr, port),
-							30000);
+					socket.connect(new InetSocketAddress(ipstr, port), 30000);
 					socket.setSoTimeout(10000);
 				}
 				// 创建连接的套接字，设置服务器连接的超时时间，以及每次读取的超时时间
@@ -177,9 +168,9 @@ public class ImageReceiveManager {
 					displayDialog("开始传输视频");
 				}
 
-				while (socket.isConnected() && cameraOpenFlagBoolean 
+				while (socket.isConnected() && cameraOpenFlagBoolean
 						&& imageRecenable) {
-				
+
 					if (socket.getInputStream().available() < 4) {
 						continue;
 					}
@@ -195,17 +186,15 @@ public class ImageReceiveManager {
 						int increment = 4;
 						InputStream inputStream = socket.getInputStream();
 						byte[] buffer = new byte[bodyLength];
-						
-						
-						inputStream.read(buffer,sum,increment);
-						sum+=increment;
-						
-						if(buffer[0]!=-1 ||
-								buffer[1]!=-40){						
+
+						inputStream.read(buffer, sum, increment);
+						sum += increment;
+
+						if (buffer[0] != -1 || buffer[1] != -40) {
 							Log.i(TAG, "kek");
 							continue;
 						}
-						
+
 						while (sum < bodyLength) {
 							inputStream.read(buffer, sum, increment);
 							sum += increment;
@@ -263,13 +252,12 @@ public class ImageReceiveManager {
 				displayDialog("读写数据时出现问题");
 				sendTCPException();
 
-			}catch(ArrayIndexOutOfBoundsException e){ 
+			} catch (ArrayIndexOutOfBoundsException e) {
 				e.printStackTrace();
 				dismissDialog();
 				displayDialog("数组溢出");
 				sendTCPException();
-			}
-			finally {
+			} finally {
 				try {
 					socket.close();
 					resetButtonStatus();
@@ -283,8 +271,7 @@ public class ImageReceiveManager {
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * Modification The thread to open camera
 	 **/
@@ -298,9 +285,7 @@ public class ImageReceiveManager {
 
 		@Override
 		public void run() {
-	
-			
-			
+
 			Log.i(TAG, "[OpenCameraThread] thread ID: "
 					+ Thread.currentThread().getId());
 
@@ -311,9 +296,7 @@ public class ImageReceiveManager {
 
 				if (socket == null) {
 					socket = new Socket();
-					socket.connect(
-							new InetSocketAddress(ipstr, port),
-							30000);
+					socket.connect(new InetSocketAddress(ipstr, port), 30000);
 				}
 				// 创建连接的套接字，设置服务器连接的超时时间
 
@@ -367,10 +350,9 @@ public class ImageReceiveManager {
 				displayDialog("摄像头指令发送失败");
 				resetButtonStatus();
 			}
-			
+
 		}
 	}
-
 
 	/**
 	 * 使用UDP向开发板发送信号
@@ -387,7 +369,7 @@ public class ImageReceiveManager {
 				String udpMsg = command;
 				DatagramSocket ds;
 				try {
-						ds = new DatagramSocket();
+					ds = new DatagramSocket();
 					InetAddress serverAddr = InetAddress.getByName(ipstr);
 					DatagramPacket dp;
 					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
@@ -402,7 +384,7 @@ public class ImageReceiveManager {
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
-					
+
 				}
 				super.run();
 			}
