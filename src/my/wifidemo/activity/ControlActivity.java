@@ -4,19 +4,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import my.wifidemo.R;
+import my.wifidemo.manager.AierialControlManager;
 import my.wifidemo.manager.ImageReceiveManager;
 import my.wifidemo.observer.ScreenObserver;
 import my.wifidemo.observer.ScreenObserver.ScreenStateListener;
@@ -106,20 +103,16 @@ public class ControlActivity extends Activity implements OnClickListener {
 /*	private ImageReceiveThread imageReceiveThread = null;
 */	
 	private ImageReceiveManager iManager;
+	private AierialControlManager aManager;
 	
-	private HeartBeatThread heartBeatThread;
-	private ChangeCtrlMsgThread changeCtrlMsgThread;
-	private ControlInfoReceiveThread controlInfoReceiveThread;
-	
-	private static Boolean imageRecenable=true;
-	private static Boolean cameraOpenFlagBoolean = false;
-	private static Boolean HeartBeatThreadEnable=true;
-	private static Boolean ctrlInfoThreadEnable=true;
+/*	private HeartBeatThread heartBeatThread;
+*/	private ChangeCtrlMsgThread changeCtrlMsgThread;
+/*	private ControlInfoReceiveThread controlInfoReceiveThread;
+*/	
 	
 	public static String controlMsg="0";
 	public static ControlPacket mControlPacket=new ControlPacket();
 	
-	private DatagramSocket datagramSocket;
 	
 	/**
 	 * 方便其他页面可以启动该页面
@@ -138,9 +131,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 	@Override
 	public void onBackPressed() {
 		
-		closeControlThreads();
+		aManager.disconnect();
+		aManager.closeSocket();
 		backToPage();
-		datagramSocket.close();
 	}
 	
 	
@@ -149,30 +142,29 @@ public class ControlActivity extends Activity implements OnClickListener {
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		closeControlThreads();
-
+		aManager.disconnect();
 	}
 
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
-		heartBeatThread.start();
+	/*	heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
+		heartBeatThread.start();*/
 		
+		aManager.connect();
 		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
 		changeCtrlMsgThread.start();
 		
-		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
+		/*controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
 		controlInfoReceiveThread.start();
-		
+		*/
 	}
 
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
-		
-		closeControlThreads();
+		aManager.disconnect();
 		super.onDestroy();
 	}
 
@@ -269,24 +261,19 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		ipTextView.setText(ipstr);
 		
-		
-		try {
-			datagramSocket=new DatagramSocket(UDP_SERVER_PORT_LOCAL);
-		} catch (SocketException e) {
-			e.printStackTrace();
-			Log.e(TAG, "[UDPSOCKET]创建socket失败");
-		}
-		
-		iManager=new ImageReceiveManager(UDP_SERVER_PORT, UDP_SERVER_PORT_LOCAL, ipstr, this, myHandler);
-				
-		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
+
+		iManager = new ImageReceiveManager(UDP_SERVER_PORT,
+				UDP_SERVER_PORT_LOCAL, ipstr, this, myHandler);
+		aManager = new AierialControlManager(UDP_SERVER_PORT,
+				UDP_SERVER_PORT_LOCAL, ipstr, this, myHandler);
+	/*	heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
 		heartBeatThread.start();
-		
+		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
+		controlInfoReceiveThread.start();
+		*/
 		changeCtrlMsgThread = new ChangeCtrlMsgThread("CHANGE_CTRL");
 		changeCtrlMsgThread.start();
 		
-		controlInfoReceiveThread=new ControlInfoReceiveThread("CTRL_INFO",datagramSocket);
-		controlInfoReceiveThread.start();
 				
 		//开启心跳线程，确认飞机和遥控端的连接状态
 		
@@ -299,16 +286,16 @@ public class ControlActivity extends Activity implements OnClickListener {
 	public void onClick(View view) {
 		switch (view.getId()) {
 		case R.id.ButtonLED1On:
-			sendUDPCommand("LED_OPEN1",datagramSocket);
+			aManager.sendUDPCommand("LED_OPEN1");
 			break;
 		case R.id.ButtonLED1Off:
-			sendUDPCommand(new byte[]{(byte)0xaa,(byte)0xaf,(byte)0x01,(byte)0x00,
+			aManager.sendUDPCommand(new byte[]{(byte)0xaa,(byte)0xaf,(byte)0x01,(byte)0x00,
 					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,
-					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,},
-					datagramSocket);
+					(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,}
+					);
 			break;
 		case R.id.ButtonLED2On:
-			sendUDPCommand("LED_OPEN2",datagramSocket);
+			aManager.sendUDPCommand("LED_OPEN2");
 			
 			
 			imageViewVideo.setDrawingCacheEnabled(true);
@@ -318,13 +305,13 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 			break;
 		case R.id.ButtonLED2Off:
-			sendUDPCommand("TCP_EXCEPTION",datagramSocket);
+			aManager.sendUDPCommand("TCP_EXCEPTION");
 			break;
 		case R.id.ButtonLED3On:
-			sendUDPCommand("JDQ_OPEN",datagramSocket);
+			aManager.sendUDPCommand("JDQ_OPEN");
 			break;
 		case R.id.ButtonLED3Off:
-			sendUDPCommand("JDQ_CLOSE",datagramSocket);
+			aManager.sendUDPCommand("JDQ_CLOSE");
 			break;
 		case R.id.ButtonOpenCamera: {
 
@@ -492,10 +479,11 @@ public class ControlActivity extends Activity implements OnClickListener {
 			controlPacket.calculateChecksum();
 			
 			
-			synchronized (mControlPacket) {
-				mControlPacket=controlPacket;
+			synchronized (aManager) {
+				aManager.setControlMsg(controlPacket);
+				
 			}
-			sendUDPCommand(controlPacket.getCommand(), datagramSocket);
+			aManager.sendUDPCommand(controlPacket.getCommand());
 		//	Log.i(TAG, ""+progress);
 		}
 	};
@@ -513,7 +501,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		public void onScreenOff() {
 			// TODO Auto-generated method stub
 			iManager.closeCamera();	
-			closeControlThreads();
+			aManager.disconnect();
 			
 			try {
 				Thread.sleep(500);
@@ -526,92 +514,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 		}
 	};
 	
-	/**
-	 * 发送心跳包的线程，确认飞机和手机的连接状态
-	 * */
-	class HeartBeatThread extends HandlerThread{
-
-		private DatagramSocket ds=null;
-		private String udpMsg="";
-		private String ctrString="";
-		private ControlPacket controlPacket;
-		private int count=0;
-		private boolean flags=true;
-		private Context mContext;
-		//public Handler mHandler;
-		public HeartBeatThread(String name,DatagramSocket datagramSocket,Context context) {
-			super(name);
-			mContext=context;
-			// TODO Auto-generated constructor stub
-			ds=datagramSocket;
-		}
-		
-
-		@Override
-		public void run(){
-			
-			
-			try {
-				if(ds==null){
-					
-					ds = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
-				}
-				
-				InetAddress serverAddr = InetAddress.getByName(ipstr);
-				while(true && ControlActivity.HeartBeatThreadEnable){
-					
-					DatagramPacket dp;
-					
-                   
-					
-					controlPacket=mControlPacket;
-					udpMsg=controlMsg;
-					
-					byte[] command=controlPacket.getCommand();
-				/*	dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
-							serverAddr, UDP_SERVER_PORT);*/
-					
-					dp = new DatagramPacket(command, command.length,
-							serverAddr, UDP_SERVER_PORT);
-					ds.send(dp);
-					count=(count+1)%2;
-			/*		Log.i(TAG,udpMsg);
-					Log.i(TAG,ctrString);
-*/
-					
-					synchronized (controlMsg) {
-						controlMsg="0";
-					}
-					
-					/*synchronized (mControlPacket) {
-						
-						if (mControlPacket==null) {
-							mControlPacket=new ControlPacket();
-						}
-						mControlPacket.setHeader(ControlPacket.HEADER_OUT);
-						mControlPacket.setType(ControlPacket.TYPE_CONTROL);
-						mControlPacket.setBody(0, 0, 0, 0);
-					}*/
-					sleep(125);
-				}
-			} catch (SocketException e) {
-				e.printStackTrace();
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				if (ds != null) {
-				//	ds.close();
-				}
-			}
-		//	Looper.loop();
-			
-		}
-
-	}
 
 	/**
 	 * 修改飞机控制信号的线程
@@ -653,91 +555,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 
 	
 	/**
-	 * 接收来自飞机的飞行信息的线程
-	 * */
-	
-	class ControlInfoReceiveThread extends HandlerThread{
-
-		DatagramSocket datagramSocket=null;
-		
-		public ControlInfoReceiveThread(String name,DatagramSocket ds) {
-			super(name);
-			// TODO Auto-generated constructor stub
-			datagramSocket=ds;
-			
-		}
-
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-
-			try {
-				
-				sleep(500);
-				
-				if(datagramSocket==null){
-					
-					datagramSocket = new DatagramSocket(UDP_SERVER_PORT_LOCAL);
-					
-				}
-				byte[] controlDataByte = new byte[13];
-				datagramSocket.setSoTimeout(200);
-				datagramSocket.setBroadcast(true);
-				DatagramPacket datagramPacket = new DatagramPacket(
-						controlDataByte, controlDataByte.length);
-				InetAddress address=InetAddress.getByName(ipstr);
-				datagramSocket.connect(address, UDP_SERVER_PORT);
-				
-				
-				Log.i(TAG,""+datagramSocket.getLocalPort()+" "+
-				datagramSocket.getLocalSocketAddress());
-				
-
-				Log.i(TAG, "[UDPSOCKET]is connected "+datagramSocket.getRemoteSocketAddress()+datagramSocket.isConnected());
-				while (ctrlInfoThreadEnable==true && datagramSocket.isConnected()) {				
-					try {
-						datagramSocket.receive(datagramPacket);
-
-						String dataString = new String(datagramPacket.getData(),
-								datagramPacket.getOffset(),
-								datagramPacket.getLength());
-						
-						
-						ControlPacket controlPacket=new ControlPacket(datagramPacket.getData());
-						String str=controlPacket.getPacketString();
-						Log.d(TAG, "[UDPreceive]"+str);
-						
-					}catch(SocketTimeoutException e){
-						//Log.i(TAG, "[UDPSOCKET]timeout");
-					}
-					catch (IOException e) {
-						// TODO: handle exception
-					//	Log.i(TAG, "[UDPreceive]"+e);
-					}catch (Exception e) {
-						// TODO: handle exception
-					}finally{
-					//	multicastLock.release();
-
-					}
-				}
-				
-				if(datagramSocket!=null)datagramSocket.close();
-			}
-			catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}finally{
-			//	if(datagramSocket!=null)datagramSocket.close();
-			}
-			super.run();
-		}
-		
-		
-	}
-	
-	/**
 	 * 主线程的handler*/
 	class MyHandler extends Handler {
 		public MyHandler() {
@@ -759,12 +576,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 				options.inPreferredConfig=Bitmap.Config.RGB_565;
 				Bitmap bitmap = BitmapFactory.decodeByteArray(buffer, 0,
 						bodyLength, options);
-				
-			/*	
-				DetectFaceAsyncTask detectFaceAsyncTask=new DetectFaceAsyncTask();
-				detectFaceAsyncTask.setBitmap(bitmap);
-				detectFaceAsyncTask.execute();
-				*/
 				imageViewVideo.setImageBitmap(bitmap);
 				
 				// 将从线程中获取的数据展示在UI的imageview当中。
@@ -787,29 +598,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 			}
 		}
 	}
-
-	/**
-	 * 在子线程中将消息发送给UI线程显示Diaglog
-	 * 
-	 * @param messageString
-	 *            String 需要在dialog中显示的消息内容
-	 * **/
-	private void displayDialog(String messageString) {
-		Message message = new Message();
-		message.what = DISPLY_DIALOG;
-		message.obj = messageString;
-		myHandler.sendMessage(message);
-	}
-
-	/**
-	 * 将主线程的dialog清除
-	 */
-	private void dismissDialog() {
-		Message message = new Message();
-		message.what = DISMISS_DIALOG;
-		myHandler.sendMessage(message);
-	}
-	
 	/**
 	 * 重置按钮布局
 	 */
@@ -820,37 +608,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 	}
 
 
-	/**
-	 * 在输入流中获取下一张图片的图片长度
-	 * 
-	 * @return bodyLength int 返回图片长度
-	 * @param inputStream
-	 *            InputStream 指定的输入流
-	 * */
-	private int getBodylength(InputStream inputStream) {
-		byte[] buffer = new byte[4];
-		try {
-			inputStream.read(buffer, 0, 4);
-			// 读取接受到的输入流的前四个字节
-			ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
-			byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-			int bodyLength = byteBuffer.getInt();
-			// 将接受到的前四个字节以小端储存的形式解析为整形获取本体长度。
-			if (bodyLength < 0 || bodyLength > 65535) {
-				// return getBodylength(inputStream);
-			}
-			// 处理获取数据流长度失败的情况
-			return bodyLength;
-			// 返回获取当前字节流表示的图片的长度
-			// Log.i(TAG,""+bodyLength);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.i(TAG, "length error");
-			return -1;
-		}
-
-	}
+	
 
 	/**
 	 * 使用UDP向开发板发送信号
@@ -939,18 +697,9 @@ public class ControlActivity extends Activity implements OnClickListener {
 		;
 	}
 
-	/**
-	 * 使用UDP向开发板发送TCP错误
-	 * 
-	 * */
-	private void sendTCPException(DatagramSocket datagramSocket) {
-		String udpMsg = "TCP_EXCEPTION";
-		sendUDPCommand(udpMsg, datagramSocket);
-	}
-	
-	/**
+/*	*//**
 	 * 改变线程的标记位关闭相应的线程
-	 * */
+	 * *//*
 	private void closeControlThreads(){
 		synchronized (imageRecenable) {
 			imageRecenable = false;
@@ -961,7 +710,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		synchronized (ctrlInfoThreadEnable) {
 			ctrlInfoThreadEnable=false;
 		}
-	}
+	}*/
 
 	/** 获取SD卡路径 */
 	public String getSDPath() {

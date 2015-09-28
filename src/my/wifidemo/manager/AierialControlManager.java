@@ -55,15 +55,30 @@ public class AierialControlManager {
 	
 	public boolean connectSocket(){
 		
-		try {
-			datagramSocket=new DatagramSocket(portLocal);
-		} catch (SocketException e) {
-			e.printStackTrace();
-			Log.e(TAG, "[UDPSOCKET]创建socket失败");
-			return false;
-		}
-		
+		if (datagramSocket == null) {
+			try {
+				datagramSocket = new DatagramSocket(portLocal);
+			} catch (SocketException e) {
+				e.printStackTrace();
+				Log.e(TAG, "[UDPSOCKET]创建socket失败");
+				return false;
+			}
+		}else if(!datagramSocket.isConnected()){
+			
+			InetAddress address;
+			try {
+				address = InetAddress.getByName(ipstr);
+				datagramSocket.connect(address, port);
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}	
 		return true;
+	}
+	
+	public void closeSocket(){
+		datagramSocket.close();
 	}
 	
 	public void connect(){
@@ -248,5 +263,97 @@ public class AierialControlManager {
 			super.run();
 		}
 
+	}
+
+	/**
+	 * 使用UDP向开发板发送信号
+	 * 
+	 * @param command
+	 *            String 需要发送的信号
+	 * */
+	public void sendUDPCommand(final String command) {
+
+		new Thread() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				String udpMsg = command;
+				DatagramSocket ds = datagramSocket;
+				try {
+					if (ds == null) {
+						ds = new DatagramSocket(portLocal);
+					}else if(!ds.isConnected()){
+						connectSocket();
+					}
+					InetAddress serverAddr = InetAddress.getByName(ipstr);
+					DatagramPacket dp;
+					dp = new DatagramPacket(udpMsg.getBytes(), udpMsg.length(),
+							serverAddr, port);
+					ds.send(dp);
+				} catch (SocketException e) {
+					e.printStackTrace();
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (ds != null) {
+					//	ds.close();
+					}
+				}
+				super.run();
+			}
+
+		}.start();
+		;
+	}
+	
+	/**
+	 * 使用UDP向开发板发送信号
+	 * 
+	 * @param data
+	 *            byte[] 需要发送的字节码
+	 * */
+	public void sendUDPCommand(final byte[] data) {
+
+		new Thread() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+			//	String udpMsg = command;
+				DatagramSocket ds = datagramSocket;
+				try {
+					if(ds==null){
+						
+						ds = new DatagramSocket(portLocal);
+					}else if(!ds.isConnected()){
+						connectSocket();
+					}
+					
+					InetAddress serverAddr = InetAddress.getByName(ipstr);
+					DatagramPacket dp;
+					dp = new DatagramPacket(data, data.length,
+							serverAddr, port);
+					ds.send(dp);
+				} catch (SocketException e) {
+					e.printStackTrace();
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (ds != null) {
+					//	ds.close();
+					}
+				}
+				super.run();
+			}
+
+		}.start();
+		;
 	}
 }
