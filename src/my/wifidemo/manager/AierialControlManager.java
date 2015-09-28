@@ -47,9 +47,11 @@ public class AierialControlManager {
 	}
 
 	public boolean connectSocket() {
+		
 		if (datagramSocket == null) {
 			try {
 				datagramSocket = new DatagramSocket(portLocal);
+				datagramSocket.setReuseAddress(true);
 			} catch (SocketException e) {
 				e.printStackTrace();
 				Log.e(TAG, "[UDPSOCKET]创建socket失败");
@@ -91,7 +93,11 @@ public class AierialControlManager {
 		synchronized (ctrlInfoThreadEnable) {
 			ctrlInfoThreadEnable = false;
 		}
-		// datagramSocket.close();
+		
+		synchronized (datagramSocket) {
+			
+			datagramSocket.close();
+		}
 	}
 
 	public boolean socketIsConnected() {
@@ -212,7 +218,8 @@ public class AierialControlManager {
 								+ datagramSocket.getRemoteSocketAddress()
 								+ datagramSocket.isConnected());
 				while (ctrlInfoThreadEnable == true
-						&& datagramSocket.isConnected()) {
+						&& datagramSocket.isConnected()&&
+						!datagramSocket.isClosed()) {
 					try {
 						datagramSocket.receive(datagramPacket);
 
@@ -228,14 +235,17 @@ public class AierialControlManager {
 
 					} catch (SocketTimeoutException e) {
 						// Log.i(TAG, "[UDPSOCKET]timeout");
+						e.printStackTrace();
 					} catch (IOException e) {
 						// TODO: handle exception
 						// Log.i(TAG, "[UDPreceive]"+e);
+						e.printStackTrace();
 					} catch (Exception e) {
+						e.printStackTrace();
 						// TODO: handle exception
 					} finally {
 						// multicastLock.release();
-
+						//datagramSocket.disconnect();
 					}
 				}
 

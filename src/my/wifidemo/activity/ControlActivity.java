@@ -277,6 +277,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 				UDP_SERVER_PORT_LOCAL, ipstr, this, myHandler);
 		aManager.connectSocket();
 		aManager.connect();
+		//新建控制飞机飞行信息的manager
 
 		throttleSeekBar.setOnSeekBarChangeListener(seekBarChangeListener);
 		// 设置油门条的监听事件
@@ -630,6 +631,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		intent.setClass(this, MainActivity.class);
 		startActivity(intent);
 		finish();
+		
 	}
 
 	@SuppressLint("NewApi")
