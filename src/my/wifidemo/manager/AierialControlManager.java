@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -50,8 +51,10 @@ public class AierialControlManager {
 		
 		if (datagramSocket == null) {
 			try {
-				datagramSocket = new DatagramSocket(portLocal);
+				datagramSocket = new DatagramSocket();
 				datagramSocket.setReuseAddress(true);
+				datagramSocket.bind(new InetSocketAddress(portLocal));
+				datagramSocket.setSoTimeout(500);
 			} catch (SocketException e) {
 				e.printStackTrace();
 				Log.e(TAG, "[UDPSOCKET]创建socket失败");
@@ -74,7 +77,7 @@ public class AierialControlManager {
 	}
 
 	public void closeSocket() {
-		datagramSocket.close();
+		datagramSocket.disconnect();
 	}
 
 	public void connect() {
@@ -87,17 +90,34 @@ public class AierialControlManager {
 	}
 
 	public void disconnect() {
-		synchronized (HeartBeatThreadEnable) {
-			HeartBeatThreadEnable = false;
-		}
-		synchronized (ctrlInfoThreadEnable) {
-			ctrlInfoThreadEnable = false;
-		}
 		
-		synchronized (datagramSocket) {
+		new Thread(){
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				super.run();
+				heartBeatThread.interrupt();
+				synchronized (ctrlInfoThreadEnable) {
+					ctrlInfoThreadEnable = false;
+				}
+				synchronized (HeartBeatThreadEnable) {
+					HeartBeatThreadEnable = false;
+				}
+				try {
+					sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				synchronized (datagramSocket) {
+					
+					datagramSocket.close();;
+				}
+			}
 			
-			datagramSocket.close();
-		}
+		}.start();;
 	}
 
 	public boolean socketIsConnected() {
@@ -162,7 +182,7 @@ public class AierialControlManager {
 				e.printStackTrace();
 			} finally {
 				if (ds != null) {
-					ds.disconnect();
+					ds.close();
 				}
 			}
 			// Looper.loop();
@@ -252,7 +272,7 @@ public class AierialControlManager {
 				synchronized (datagramSocket) {
 
 					if (datagramSocket != null)
-						datagramSocket.disconnect();
+						datagramSocket.close();
 				}
 			} catch (SocketException e) {
 				// TODO Auto-generated catch block
@@ -260,7 +280,7 @@ public class AierialControlManager {
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
-				// if(datagramSocket!=null)datagramSocket.close();
+				if(datagramSocket!=null)datagramSocket.close();
 			}
 			super.run();
 		}
