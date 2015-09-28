@@ -117,6 +117,7 @@ public class ImageReceiveManager {
 
 	}
 
+	
 	public void startReceive(){
 		imageRecenable=true;
 		imageReceiveThread = new ImageReceiveThread("IMAGERECEIVE_THREAD");

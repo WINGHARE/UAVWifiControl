@@ -1,17 +1,13 @@
 package my.wifidemo.activity;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -21,7 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import my.wifidemo.R;
-import my.wifidemo.R.id;
+import my.wifidemo.manager.ImageReceiveManager;
 import my.wifidemo.observer.ScreenObserver;
 import my.wifidemo.observer.ScreenObserver.ScreenStateListener;
 import my.wifidemo.protocol.ControlPacket;
@@ -32,20 +28,8 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.PointF;
-import android.graphics.Rect;
-import android.media.FaceDetector;
-import android.media.FaceDetector.Face;
-import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -63,7 +47,6 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.zerokol.views.JoystickView;
 import com.zerokol.views.JoystickView.OnJoystickMoveListener;
@@ -120,7 +103,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 	private static int UDP_SERVER_PORT = 10086;
 	private static int UDP_SERVER_PORT_LOCAL=12306;
 	
-	private ImageReceiveThread imageReceiveThread = null;
+/*	private ImageReceiveThread imageReceiveThread = null;
+*/	
+	private ImageReceiveManager iManager;
+	
 	private HeartBeatThread heartBeatThread;
 	private ChangeCtrlMsgThread changeCtrlMsgThread;
 	private ControlInfoReceiveThread controlInfoReceiveThread;
@@ -291,8 +277,8 @@ public class ControlActivity extends Activity implements OnClickListener {
 			Log.e(TAG, "[UDPSOCKET]创建socket失败");
 		}
 		
-	
-		
+		iManager=new ImageReceiveManager(UDP_SERVER_PORT, UDP_SERVER_PORT_LOCAL, ipstr, this, myHandler);
+				
 		heartBeatThread=new HeartBeatThread("HEART_BEAT",datagramSocket,this);
 		heartBeatThread.start();
 		
@@ -346,25 +332,30 @@ public class ControlActivity extends Activity implements OnClickListener {
 			btnStartReceive.setVisibility(View.VISIBLE);
 			btnOpenCamera.setVisibility(View.GONE);
 
-			OpenCameraThread OpenCameraThread = new OpenCameraThread(
+			
+			/*OpenCameraThread OpenCameraThread = new OpenCameraThread(
 					"OPENCAMRERA_THREAD");
-			OpenCameraThread.start();
+			OpenCameraThread.start();*/
+			
+			iManager.openCamera();
 			Log.i(TAG, "[btnOpenCamera]Thread create");
 			break;
 		}
 		case R.id.ButtonStartRecevie: {
 			btnStartReceive.setVisibility(View.GONE);
-			imageReceiveThread = new ImageReceiveThread("IMAGERECEIVE_THREAD");
-			imageReceiveThread.start();
+			/*imageReceiveThread = new ImageReceiveThread("IMAGERECEIVE_THREAD");
+			imageReceiveThread.start();*/
+			iManager.startReceive();
 			break;
 		}
 		case R.id.ButtonCloseCamera: {
 			btnCloseCamera.setVisibility(View.GONE);
 			btnOpenCamera.setVisibility(View.VISIBLE);
 			btnStartReceive.setVisibility(View.GONE);
-			CloseCameraThread thread = new CloseCameraThread(
+			/*CloseCameraThread thread = new CloseCameraThread(
 					"CLOSECAMERA_THREAD");
-			thread.start();
+			thread.start();*/
+			iManager.closeCamera();
 			break;
 		}
 		
@@ -521,8 +512,7 @@ public class ControlActivity extends Activity implements OnClickListener {
 		
 		public void onScreenOff() {
 			// TODO Auto-generated method stub
-			CloseCameraThread closThread=new CloseCameraThread("CLOSECAM_LOCKSCREEN");
-			closThread.start();		
+			iManager.closeCamera();	
 			closeControlThreads();
 			
 			try {
@@ -659,249 +649,6 @@ public class ControlActivity extends Activity implements OnClickListener {
 			super.run();
 		}
 		
-	}
-	/**
-	 * Modification The thread to open camera
-	 **/
-	class OpenCameraThread extends HandlerThread {
-
-		private Socket socket = null;
-
-		public OpenCameraThread(String name) {
-			super(name);
-		}
-
-		@Override
-		public void run() {
-	
-			
-			
-			Log.i(TAG, "[OpenCameraThread] thread ID: "
-					+ Thread.currentThread().getId());
-
-			displayDialog("正在连接摄像头 IP: " + ipstr);
-
-			// TODO Auto-generated method stub
-			try {
-
-				if (socket == null) {
-					socket = new Socket();
-					socket.connect(
-							new InetSocketAddress(ipstr, UDP_SERVER_PORT),
-							30000);
-				}
-				// 创建连接的套接字，设置服务器连接的超时时间
-
-				Log.i(TAG, "[OpenCameraThread]socket created ，thread ID:"
-						+ Thread.currentThread().getId());
-				if (socket.isConnected()) {
-
-					Log.i(TAG, "[OpenCameraThread]Host connected");
-					OutputStream outputStream;
-					try {
-						byte[] enableCamera = { (byte) 0x5a, (byte) 0xa5,
-								(byte) 0xc3, (byte) 0x3c };
-						outputStream = socket.getOutputStream();
-						outputStream.write(enableCamera);
-						outputStream.close();
-						socket.close();
-						synchronized (cameraOpenFlagBoolean) {
-							cameraOpenFlagBoolean = true;
-						}
-						Log.i(TAG, "[OpenCameraThread]Command sent");
-						dismissDialog();
-						displayDialog("摄像头已打开 IP: " + ipstr);
-
-						// 讲打开摄像头的字节码指令发送给摄像头
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				} else {
-					dismissDialog();
-					displayDialog("服务器连接失败");
-					resetButtonStatus();
-				}
-			} catch (SocketTimeoutException e) {
-				e.printStackTrace();
-				dismissDialog();
-				displayDialog("服务器连接超时");
-				resetButtonStatus();
-
-			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				dismissDialog();
-				displayDialog("服务器连接失败");
-				resetButtonStatus();
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				dismissDialog();
-				displayDialog("摄像头指令发送失败");
-				resetButtonStatus();
-			}
-			
-		}
-	}
-
-	/** 
-	 * 关闭摄像头的线程 
-	 * */
-	class CloseCameraThread extends HandlerThread {
-
-		public CloseCameraThread(String name) {
-			super(name);
-		}
-		@Override
-		public void run() {
-
-			synchronized (cameraOpenFlagBoolean) {
-				cameraOpenFlagBoolean = false;
-			}
-		}
-
-	}
-	
-	/**
-	 * 接收图像的线程
-	 * */
-
-	class ImageReceiveThread extends HandlerThread {
-
-		private Socket socket = null;
-		BufferedInputStream inputStream = null;
-
-		public ImageReceiveThread(String name) {
-			super(name);
-		}
-
-		@Override
-		public void run() {
-			Log.i(TAG, "[ImageReceiveThread]Current thread id: "
-					+ Thread.currentThread().getId());
-
-			try {
-				if (socket == null) {
-					socket = new Socket();
-					socket.connect(
-							new InetSocketAddress(ipstr, UDP_SERVER_PORT),
-							30000);
-					socket.setSoTimeout(10000);
-				}
-				// 创建连接的套接字，设置服务器连接的超时时间，以及每次读取的超时时间
-
-				if (socket.isConnected()) {
-					dismissDialog();
-					displayDialog("开始传输视频");
-				}
-
-				while (socket.isConnected() && cameraOpenFlagBoolean 
-						&& imageRecenable) {
-				
-					if (socket.getInputStream().available() < 4) {
-						continue;
-					}
-					// socket在没有接收齐4个字节的数据之前退出循环
-
-					int bodyLength = 0;
-					bodyLength = getBodylength(socket.getInputStream());
-					// 获取本次接受到的jpg图片的长度
-
-					if (bodyLength > 0 && bodyLength < 65535) {
-
-						int sum = 0;
-						int increment = 4;
-						InputStream inputStream = socket.getInputStream();
-						byte[] buffer = new byte[bodyLength];
-						
-						
-						inputStream.read(buffer,sum,increment);
-						sum+=increment;
-						
-						if(buffer[0]!=-1 ||
-								buffer[1]!=-40){						
-							Log.i(TAG, "kek");
-							continue;
-						}
-						
-						while (sum < bodyLength) {
-							inputStream.read(buffer, sum, increment);
-							sum += increment;
-						}
-
-						inputStream.read(buffer, sum, bodyLength - sum);
-
-						// 从流中读取数据到缓冲区当中
-
-						Message message = new Message();
-						message.what = REFRESH_VIEW;
-						message.obj = buffer;
-						message.arg1 = bodyLength;
-						myHandler.sendMessage(message);
-						// 将接受到的数据发送给handler提交给UI线程刷新UI
-					}
-				}
-				if (cameraOpenFlagBoolean == false && socket.isConnected()) {
-
-					byte[] disbleCamera = { (byte) 0xaa, (byte) 0x55,
-							(byte) 0xcc, (byte) 0x33 };
-
-					socket.shutdownInput();
-					OutputStream outputStream = socket.getOutputStream();
-					outputStream.write(disbleCamera);
-					outputStream.close();
-					socket.close();
-
-					Message message = new Message();
-					message.what = REFRESH_VIEW;
-					byte[] r = { (byte) 0xff };
-					message.obj = r;
-					message.arg1 = 1;
-					myHandler.sendMessage(message);
-					// 将View的图像清除
-
-					displayDialog("连接已关闭");
-				}
-			} catch (SocketTimeoutException e) {
-				// TODO: handle exception
-				dismissDialog();
-				displayDialog("服务器连接超时");
-				sendTCPException(datagramSocket);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				dismissDialog();
-				displayDialog("主机地址错误");
-				sendTCPException(datagramSocket);
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				dismissDialog();
-				displayDialog("读写数据时出现问题");
-				sendTCPException(datagramSocket);
-
-			}catch(ArrayIndexOutOfBoundsException e){ 
-				e.printStackTrace();
-				dismissDialog();
-				displayDialog("数组溢出");
-				sendTCPException(datagramSocket);
-			}
-			finally {
-				try {
-					socket.close();
-					resetButtonStatus();
-				} catch (IOException e) {
-					e.printStackTrace();
-					dismissDialog();
-					displayDialog("关闭主机时出现问题");
-					resetButtonStatus();
-					sendTCPException(datagramSocket);
-				}
-			}
-		}
 	}
 
 	
@@ -1234,9 +981,10 @@ public class ControlActivity extends Activity implements OnClickListener {
 	 *  
 	 * */
 	private void backToPage(){
-		CloseCameraThread cameraThread = new CloseCameraThread(
+		/*CloseCameraThread cameraThread = new CloseCameraThread(
 				"CLOSE_CAMERATHREAD");
-		cameraThread.start();
+		cameraThread.start();*/
+		iManager.closeCamera();
 		try {
 			Thread.sleep(250);
 		} catch (InterruptedException e) {
